@@ -373,9 +373,12 @@ export class WindowManager {
         );
       });
       logger.debug(`\n→ 最終選擇: ${candidates[0].window.title} [Z:${candidates[0].window.zIndex}]`);
+      return candidates[0].window;
     }
 
-    return candidates[0]?.window || null;
+    // 後備搜尋：找左右方向的視窗
+    logger.debug(`\n上方沒有找到視窗，啟動後備搜尋...`);
+    return this.findFallbackForUp(current, windows);
   }
 
   private findWindowBelow(
@@ -449,9 +452,12 @@ export class WindowManager {
         );
       });
       logger.debug(`\n→ 最終選擇: ${candidates[0].window.title}`);
+      return candidates[0].window;
     }
 
-    return candidates[0]?.window || null;
+    // 後備搜尋：找左右方向的視窗
+    logger.debug(`\n下方沒有找到視窗，啟動後備搜尋...`);
+    return this.findFallbackForDown(current, windows);
   }
 
   private findWindowToLeft(
@@ -524,9 +530,12 @@ export class WindowManager {
         );
       });
       logger.debug(`\n→ 最終選擇: ${candidates[0].window.title}`);
+      return candidates[0].window;
     }
 
-    return candidates[0]?.window || null;
+    // 後備搜尋：找上下方向的視窗
+    logger.debug(`\n左方沒有找到視窗，啟動後備搜尋...`);
+    return this.findFallbackForLeft(current, windows);
   }
 
   private findWindowToRight(
@@ -600,9 +609,147 @@ export class WindowManager {
         );
       });
       logger.debug(`\n→ 最終選擇: ${candidates[0].window.title}`);
+      return candidates[0].window;
     }
 
-    return candidates[0]?.window || null;
+    // 後備搜尋：找上下方向的視窗
+    logger.debug(`\n右方沒有找到視窗，啟動後備搜尋...`);
+    return this.findFallbackForRight(current, windows);
+  }
+
+  /**
+   * 檢查兩個視窗是否完全重疊（X軸和Y軸都有重疊）
+   */
+  private hasCompleteOverlap(win1: WindowBounds, win2: WindowBounds): boolean {
+    return this.hasHorizontalOverlap(win1, win2) && this.hasVerticalOverlap(win1, win2);
+  }
+
+  /**
+   * 後備搜尋：向上找不到時，從上緣往下找最近的重疊視窗
+   */
+  private findFallbackForUp(
+    current: WindowInfo,
+    windows: WindowInfo[]
+  ): WindowInfo | null {
+    logger.debug(`\n=== 後備搜尋：從上緣往下找重疊視窗 ===`);
+    logger.debug(`當前視窗: ${current.title}`);
+    logger.debug(`  Y 座標: ${current.bounds.y}`);
+    logger.debug(`  搜尋條件: 與當前視窗完全重疊 且 Y > ${current.bounds.y}（在下方）`);
+    
+    // 先檢查所有視窗
+    windows.forEach((win) => {
+      const hasXOverlap = this.hasHorizontalOverlap(current.bounds, win.bounds);
+      const hasYOverlap = this.hasVerticalOverlap(current.bounds, win.bounds);
+      const hasComplete = hasXOverlap && hasYOverlap;
+      const yCondition = win.bounds.y > current.bounds.y;
+      
+      logger.debug(
+        `\n檢查: ${win.title}` +
+        `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
+        `\n  X重疊: ${hasXOverlap ? '✓' : '✗'}` +
+        `\n  Y重疊: ${hasYOverlap ? '✓' : '✗'}` +
+        `\n  完全重疊: ${hasComplete ? '✓' : '✗'}` +
+        `\n  Y座標條件 (${win.bounds.y} > ${current.bounds.y}): ${yCondition ? '✓' : '✗'}` +
+        `\n  → ${hasComplete && yCondition ? '✓✓ 符合' : '✗✗ 不符合'}`
+      );
+    });
+    
+    const candidates = windows
+      .filter((win) => this.hasCompleteOverlap(current.bounds, win.bounds))
+      .filter((win) => win.bounds.y > current.bounds.y)
+      .sort((a, b) => a.bounds.y - b.bounds.y);  // 升序，選最小的Y（最接近上緣）
+
+    if (candidates.length > 0) {
+      logger.debug(`\n找到 ${candidates.length} 個符合條件的候選視窗`);
+      logger.debug(`選擇最接近的: ${candidates[0].title} (Y: ${candidates[0].bounds.y})`);
+      return candidates[0];
+    }
+
+    logger.debug(`\n後備搜尋也未找到視窗`);
+    return null;
+  }
+
+  /**
+   * 後備搜尋：向下找不到時，從下緣往上找最近的重疊視窗
+   */
+  private findFallbackForDown(
+    current: WindowInfo,
+    windows: WindowInfo[]
+  ): WindowInfo | null {
+    const currentBottom = current.bounds.y + current.bounds.height;
+    logger.debug(`\n=== 後備搜尋：從下緣往上找重疊視窗 ===`);
+    logger.debug(`當前視窗: ${current.title}`);
+    logger.debug(`  下緣 Y 座標: ${currentBottom}`);
+    logger.debug(`  搜尋條件: 與當前視窗完全重疊 且 Y < ${currentBottom}（在上方）`);
+    
+    const candidates = windows
+      .filter((win) => this.hasCompleteOverlap(current.bounds, win.bounds))
+      .filter((win) => win.bounds.y < currentBottom)
+      .sort((a, b) => b.bounds.y - a.bounds.y);  // 降序，選最大的Y（最接近下緣）
+
+    if (candidates.length > 0) {
+      logger.debug(`找到 ${candidates.length} 個符合條件的候選視窗`);
+      logger.debug(`選擇最接近的: ${candidates[0].title} (Y: ${candidates[0].bounds.y})`);
+      return candidates[0];
+    }
+
+    logger.debug(`後備搜尋也未找到視窗`);
+    return null;
+  }
+
+  /**
+   * 後備搜尋：向左找不到時，從左緣往右找最近的重疊視窗
+   */
+  private findFallbackForLeft(
+    current: WindowInfo,
+    windows: WindowInfo[]
+  ): WindowInfo | null {
+    logger.debug(`\n=== 後備搜尋：從左緣往右找重疊視窗 ===`);
+    logger.debug(`當前視窗: ${current.title}`);
+    logger.debug(`  X 座標: ${current.bounds.x}`);
+    logger.debug(`  搜尋條件: 與當前視窗完全重疊 且 X > ${current.bounds.x}（在右方）`);
+    
+    const candidates = windows
+      .filter((win) => this.hasCompleteOverlap(current.bounds, win.bounds))
+      .filter((win) => win.bounds.x > current.bounds.x)
+      .sort((a, b) => a.bounds.x - b.bounds.x);  // 升序，選最小的X（最接近左緣）
+
+    if (candidates.length > 0) {
+      logger.debug(`找到 ${candidates.length} 個符合條件的候選視窗`);
+      logger.debug(`選擇最接近的: ${candidates[0].title} (X: ${candidates[0].bounds.x})`);
+      return candidates[0];
+    }
+
+    logger.debug(`後備搜尋也未找到視窗`);
+    return null;
+  }
+
+  /**
+   * 後備搜尋：向右找不到時，從右緣往左找最近的重疊視窗
+   */
+  private findFallbackForRight(
+    current: WindowInfo,
+    windows: WindowInfo[]
+  ): WindowInfo | null {
+    const currentRight = current.bounds.x + current.bounds.width;
+    logger.debug(`\n=== 後備搜尋：從右緣往左找重疊視窗 ===`);
+    logger.debug(`當前視窗: ${current.title}`);
+    logger.debug(`  右緣 X 座標: ${currentRight}`);
+    logger.debug(`  搜尋條件: 與當前視窗完全重疊 且 X < ${currentRight}（在左方）`);
+    
+    const candidates = windows
+      .filter((win) => this.hasCompleteOverlap(current.bounds, win.bounds))
+      .filter((win) => win.bounds.x < currentRight)
+      .sort((a, b) => b.bounds.x - a.bounds.x);  // 降序，選最大的X（最接近右緣）
+
+    if (candidates.length > 0) {
+      logger.debug(`找到 ${candidates.length} 個符合條件的候選視窗`);
+      logger.debug(`選擇最接近的: ${candidates[0].title} (X: ${candidates[0].bounds.x})`);
+      return candidates[0];
+    }
+
+    logger.debug(`後備搜尋也未找到視窗`);
+    return null;
   }
 
   private getCenterPoint(bounds: WindowBounds): { x: number; y: number } {
