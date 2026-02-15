@@ -27,3 +27,20 @@ export interface AppConfig {
 }
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
+
+declare global {
+  interface Window {
+    electronAPI: {
+      getConfig: () => Promise<AppConfig>;
+      setConfig: (config: AppConfig) => Promise<boolean>;
+      checkPermissions: () => Promise<boolean>;
+      requestPermissions: () => Promise<boolean>;
+      getAllWindows: () => Promise<WindowInfo[]>;
+      getActiveWindow: () => Promise<WindowInfo | null>;
+      suspendShortcuts: () => Promise<void>;
+      resumeShortcuts: () => Promise<void>;
+    };
+  }
+}
+
+export {};

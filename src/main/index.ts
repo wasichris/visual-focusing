@@ -38,7 +38,7 @@ function createWindow() {
 
   if (process.env.NODE_ENV === 'development') {
     mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools(); // 註解掉自動開啟 DevTools
   } else {
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
@@ -46,6 +46,38 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
+  // 將 console.log 轉發到 renderer 的 console
+  setupConsoleForwarding();
+}
+
+function setupConsoleForwarding() {
+  if (!mainWindow) return;
+  
+  const originalLog = console.log;
+  const originalWarn = console.warn;
+  const originalError = console.error;
+  const originalDebug = console.debug;
+  
+  console.log = (...args) => {
+    originalLog(...args);
+    mainWindow?.webContents.executeJavaScript(`console.log(${JSON.stringify(args.map(String).join(' '))})`);
+  };
+  
+  console.warn = (...args) => {
+    originalWarn(...args);
+    mainWindow?.webContents.executeJavaScript(`console.warn(${JSON.stringify(args.map(String).join(' '))})`);
+  };
+  
+  console.error = (...args) => {
+    originalError(...args);
+    mainWindow?.webContents.executeJavaScript(`console.error(${JSON.stringify(args.map(String).join(' '))})`);
+  };
+  
+  console.debug = (...args) => {
+    originalDebug(...args);
+    mainWindow?.webContents.executeJavaScript(`console.debug(${JSON.stringify(args.map(String).join(' '))})`);
+  };
 }
 
 function setupIpcHandlers() {
@@ -55,6 +87,8 @@ function setupIpcHandlers() {
       shortcuts: (store as any).get('shortcuts'),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       enabled: (store as any).get('enabled'),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      showNotifications: (store as any).get('showNotifications'),
     };
   });
 
@@ -63,6 +97,8 @@ function setupIpcHandlers() {
     (store as any).set('shortcuts', config.shortcuts);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (store as any).set('enabled', config.enabled);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (store as any).set('showNotifications', config.showNotifications);
     
     if (config.enabled) {
       shortcutManager.updateShortcuts(config.shortcuts);
@@ -87,6 +123,15 @@ function setupIpcHandlers() {
 
   ipcMain.handle('get-active-window', () => {
     return windowManagerInstance.getActiveWindow();
+  });
+
+  // 新增：暫停/恢復快捷鍵（供設定頁面使用）
+  ipcMain.handle('suspend-shortcuts', () => {
+    shortcutManager.suspend();
+  });
+
+  ipcMain.handle('resume-shortcuts', () => {
+    shortcutManager.resume();
   });
 }
 

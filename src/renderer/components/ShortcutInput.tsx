@@ -14,6 +14,11 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
   useEffect(() => {
     if (isRecording && inputRef.current) {
       inputRef.current.focus();
+      // 開始錄製時暫停快捷鍵
+      window.electronAPI.suspendShortcuts();
+    } else {
+      // 結束錄製時恢復快捷鍵
+      window.electronAPI.resumeShortcuts();
     }
   }, [isRecording]);
 
@@ -25,10 +30,10 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
 
     const keys: string[] = [];
 
-    // 修飾鍵
+    // 修飾鍵 - 修正 Option 鍵偵測
     if (e.metaKey) keys.push('CommandOrControl');
     if (e.ctrlKey && !e.metaKey) keys.push('Control');
-    if (e.altKey) keys.push('Alt');
+    if (e.altKey) keys.push('Alt');  // Option 鍵在 macOS 上對應 altKey
     if (e.shiftKey) keys.push('Shift');
 
     // 主鍵
@@ -48,13 +53,25 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
         ' ': 'Space',
       };
 
-      keys.push(keyMap[mainKey] || mainKey.toUpperCase());
+      // 處理字母鍵，將小寫轉大寫
+      let finalKey = keyMap[mainKey] || mainKey;
+      if (finalKey.length === 1) {
+        finalKey = finalKey.toUpperCase();
+      }
+      
+      keys.push(finalKey);
     }
 
     setRecordedKeys(keys);
 
-    // 如果有完整的組合鍵，完成錄製
-    if (keys.length >= 2) {
+    // 如果有完整的組合鍵（至少一個修飾鍵 + 一個主鍵），完成錄製
+    // 檢查是否有主鍵（非修飾鍵）
+    const hasMainKey = mainKey !== 'Meta' &&
+                        mainKey !== 'Control' &&
+                        mainKey !== 'Alt' &&
+                        mainKey !== 'Shift';
+    
+    if (hasMainKey && keys.length >= 2) {
       const shortcut = keys.join('+');
       onChange(shortcut);
       setIsRecording(false);

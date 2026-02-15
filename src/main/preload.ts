@@ -10,4 +10,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('get-all-windows'),
   getActiveWindow: (): Promise<WindowInfo | null> =>
     ipcRenderer.invoke('get-active-window'),
+  suspendShortcuts: () => ipcRenderer.invoke('suspend-shortcuts'),
+  resumeShortcuts: () => ipcRenderer.invoke('resume-shortcuts'),
 });

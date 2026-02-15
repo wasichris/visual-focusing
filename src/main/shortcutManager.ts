@@ -7,6 +7,7 @@ import { logger } from './logger';
 export class ShortcutManager {
   private store: Store<AppConfig>;
   private registered = false;
+  private suspended = false;  // 新增：暫停狀態
 
   constructor() {
     this.store = new Store({
@@ -21,6 +22,18 @@ export class ShortcutManager {
         showNotifications: false,
       },
     });
+  }
+
+  // 新增：暫停快捷鍵（設定時使用）
+  suspend(): void {
+    this.suspended = true;
+    logger.debug('快速鍵已暫停');
+  }
+
+  // 新增：恢復快捷鍵
+  resume(): void {
+    this.suspended = false;
+    logger.debug('快速鍵已恢復');
   }
 
   registerShortcuts(): boolean {
@@ -87,6 +100,12 @@ export class ShortcutManager {
   }
 
   private handleShortcut(direction: Direction): void {
+    // 如果暫停中，不處理快捷鍵
+    if (this.suspended) {
+      logger.debug(`快速鍵已暫停，忽略: ${direction}`);
+      return;
+    }
+    
     logger.debug(`觸發快速鍵: ${direction}`);
     
     try {
