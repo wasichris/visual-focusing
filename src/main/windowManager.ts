@@ -344,8 +344,12 @@ export class WindowManager {
         // Z-order 懲罰：數字越大（越下層）懲罰越多
         const zOrderPenalty = (win.zIndex ?? 0) * 50;
         
-        // 加權距離：垂直距離 + 水平偏移x2 + Z-order懲罰
-        const weightedDistance = verticalDistance + horizontalOffset * 2 + zOrderPenalty;
+        // 可見面積比例：計算視窗在上方的可見面積比例
+        const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'up');
+        
+        // 加權距離：垂直距離 + 水平偏移x2 - 可見比例x500 + Z-order懲罰
+        // 可見比例越高，分數越低（越優先）
+        const weightedDistance = verticalDistance + horizontalOffset * 2 - visibleRatio * 500 + zOrderPenalty;
         
         return {
           window: win,
@@ -353,6 +357,7 @@ export class WindowManager {
           verticalDistance,
           horizontalOffset,
           zOrderPenalty,
+          visibleRatio,
         };
       })
       .sort((a, b) => a.distance - b.distance);
@@ -360,11 +365,12 @@ export class WindowManager {
     logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個`);
     
     if (candidates.length > 0) {
-      logger.debug(`排序後的候選清單 (前3名，優先選擇上層視窗):`);
+      logger.debug(`排序後的候選清單 (前3名):`);
       candidates.slice(0, 3).forEach((c, idx) => {
         logger.debug(
-          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}] - 加權分數:${c.distance.toFixed(0)} ` +
-          `(垂直:${c.verticalDistance.toFixed(0)} + 水平x2:${c.horizontalOffset.toFixed(0)} + Z懲罰:${c.zOrderPenalty})`
+          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]` +
+          `\n     加權分數:${c.distance.toFixed(0)} = 垂直${c.verticalDistance.toFixed(0)} + 水平×2(${(c.horizontalOffset * 2).toFixed(0)}) - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
+          `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
       logger.debug(`\n→ 最終選擇: ${candidates[0].window.title} [Z:${candidates[0].window.zIndex}]`);
@@ -417,8 +423,11 @@ export class WindowManager {
         // Z-order 懲罰：數字越大（越下層）懲罰越多
         const zOrderPenalty = (win.zIndex ?? 0) * 50;
         
-        // 加權距離：垂直距離 + 水平偏移x2 + Z-order懲罰
-        const weightedDistance = verticalDistance + horizontalOffset * 2 + zOrderPenalty;
+        // 可見面積比例：計算視窗在下方的可見面積比例
+        const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'down');
+        
+        // 加權距離：垂直距離 + 水平偏移x2 - 可見比例x500 + Z-order懲罰
+        const weightedDistance = verticalDistance + horizontalOffset * 2 - visibleRatio * 500 + zOrderPenalty;
         
         return {
           window: win,
@@ -426,6 +435,7 @@ export class WindowManager {
           verticalDistance,
           horizontalOffset,
           zOrderPenalty,
+          visibleRatio,
         };
       })
       .sort((a, b) => a.distance - b.distance);
@@ -433,11 +443,12 @@ export class WindowManager {
     logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個`);
     
     if (candidates.length > 0) {
-      logger.debug(`排序後的候選清單 (前3名，優先選擇上層視窗):`);
+      logger.debug(`排序後的候選清單 (前3名):`);
       candidates.slice(0, 3).forEach((c, idx) => {
         logger.debug(
-          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}] - 加權分數:${c.distance.toFixed(0)} ` +
-          `(垂直:${c.verticalDistance.toFixed(0)} + 水平x2:${c.horizontalOffset.toFixed(0)} + Z懲罰:${c.zOrderPenalty})`
+          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]` +
+          `\n     加權分數:${c.distance.toFixed(0)} = 垂直${c.verticalDistance.toFixed(0)} + 水平×2(${(c.horizontalOffset * 2).toFixed(0)}) - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
+          `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
       logger.debug(`\n→ 最終選擇: ${candidates[0].window.title}`);
@@ -487,8 +498,11 @@ export class WindowManager {
         // Z-order 懲罰：數字越大（越下層）懲罰越多
         const zOrderPenalty = (win.zIndex ?? 0) * 50;
         
-        // 加權距離：水平距離 + 垂直偏移x2 + Z-order懲罰
-        const weightedDistance = horizontalDistance + verticalOffset * 2 + zOrderPenalty;
+        // 可見面積比例：計算視窗在左方的可見面積比例
+        const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'left');
+        
+        // 加權距離：水平距離 + 垂直偏移x2 - 可見比例x500 + Z-order懲罰
+        const weightedDistance = horizontalDistance + verticalOffset * 2 - visibleRatio * 500 + zOrderPenalty;
         
         return {
           window: win,
@@ -496,6 +510,7 @@ export class WindowManager {
           horizontalDistance,
           verticalOffset,
           zOrderPenalty,
+          visibleRatio,
         };
       })
       .sort((a, b) => a.distance - b.distance);
@@ -503,11 +518,12 @@ export class WindowManager {
     logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個`);
     
     if (candidates.length > 0) {
-      logger.debug(`排序後的候選清單 (前3名，優先選擇上層視窗):`);
+      logger.debug(`排序後的候選清單 (前3名):`);
       candidates.slice(0, 3).forEach((c, idx) => {
         logger.debug(
-          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}] - 加權分數:${c.distance.toFixed(0)} ` +
-          `(水平:${c.horizontalDistance.toFixed(0)} + 垂直x2:${c.verticalOffset.toFixed(0)} + Z懲罰:${c.zOrderPenalty})`
+          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]` +
+          `\n     加權分數:${c.distance.toFixed(0)} = 水平${c.horizontalDistance.toFixed(0)} + 垂直×2(${(c.verticalOffset * 2).toFixed(0)}) - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
+          `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
       logger.debug(`\n→ 最終選擇: ${candidates[0].window.title}`);
@@ -560,8 +576,11 @@ export class WindowManager {
         // Z-order 懲罰：數字越大（越下層）懲罰越多
         const zOrderPenalty = (win.zIndex ?? 0) * 50;
         
-        // 加權距離：水平距離 + 垂直偏移x2 + Z-order懲罰
-        const weightedDistance = horizontalDistance + verticalOffset * 2 + zOrderPenalty;
+        // 可見面積比例：計算視窗在右方的可見面積比例
+        const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'right');
+        
+        // 加權距離：水平距離 + 垂直偏移x2 - 可見比例x500 + Z-order懲罰
+        const weightedDistance = horizontalDistance + verticalOffset * 2 - visibleRatio * 500 + zOrderPenalty;
         
         return {
           window: win,
@@ -569,6 +588,7 @@ export class WindowManager {
           horizontalDistance,
           verticalOffset,
           zOrderPenalty,
+          visibleRatio,
         };
       })
       .sort((a, b) => a.distance - b.distance);
@@ -576,11 +596,12 @@ export class WindowManager {
     logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個`);
     
     if (candidates.length > 0) {
-      logger.debug(`排序後的候選清單 (前3名，優先選擇上層視窗):`);
+      logger.debug(`排序後的候選清單 (前3名):`);
       candidates.slice(0, 3).forEach((c, idx) => {
         logger.debug(
-          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}] - 加權分數:${c.distance.toFixed(0)} ` +
-          `(水平:${c.horizontalDistance.toFixed(0)} + 垂直x2:${c.verticalOffset.toFixed(0)} + Z懲罰:${c.zOrderPenalty})`
+          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]` +
+          `\n     加權分數:${c.distance.toFixed(0)} = 水平${c.horizontalDistance.toFixed(0)} + 垂直×2(${(c.verticalOffset * 2).toFixed(0)}) - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
+          `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
       logger.debug(`\n→ 最終選擇: ${candidates[0].window.title}`);
@@ -608,6 +629,104 @@ export class WindowManager {
     const win1Bottom = win1.y + win1.height;
     const win2Bottom = win2.y + win2.height;
     return !(win1Bottom <= win2.y || win2Bottom <= win1.y);
+  }
+
+  /**
+   * 計算目標視窗在指定方向上的可見面積比例
+   * @param current 當前視窗
+   * @param target 目標視窗
+   * @param direction 方向
+   * @returns 可見面積比例 (0-1)
+   */
+  private calculateVisibleAreaRatio(
+    current: WindowBounds,
+    target: WindowBounds,
+    direction: Direction
+  ): number {
+    const targetArea = target.width * target.height;
+    if (targetArea === 0) return 0;
+
+    let visibleArea = 0;
+
+    switch (direction) {
+      case 'up': {
+        // 計算目標視窗在當前視窗頂部上方的可見面積
+        const currentTop = current.y;
+        const visibleBottom = Math.min(target.y + target.height, currentTop);
+        const visibleTop = target.y;
+        const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+
+        // X 軸方向的重疊寬度
+        const overlapLeft = Math.max(current.x, target.x);
+        const overlapRight = Math.min(
+          current.x + current.width,
+          target.x + target.width
+        );
+        const overlapWidth = Math.max(0, overlapRight - overlapLeft);
+
+        visibleArea = visibleHeight * overlapWidth;
+        break;
+      }
+
+      case 'down': {
+        // 計算目標視窗在當前視窗底部下方的可見面積
+        const currentBottom = current.y + current.height;
+        const visibleTop = Math.max(target.y, currentBottom);
+        const visibleBottom = target.y + target.height;
+        const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+
+        // X 軸方向的重疊寬度
+        const overlapLeft = Math.max(current.x, target.x);
+        const overlapRight = Math.min(
+          current.x + current.width,
+          target.x + target.width
+        );
+        const overlapWidth = Math.max(0, overlapRight - overlapLeft);
+
+        visibleArea = visibleHeight * overlapWidth;
+        break;
+      }
+
+      case 'left': {
+        // 計算目標視窗在當前視窗左邊界左側的可見面積
+        const currentLeft = current.x;
+        const visibleRight = Math.min(target.x + target.width, currentLeft);
+        const visibleLeft = target.x;
+        const visibleWidth = Math.max(0, visibleRight - visibleLeft);
+
+        // Y 軸方向的重疊高度
+        const overlapTop = Math.max(current.y, target.y);
+        const overlapBottom = Math.min(
+          current.y + current.height,
+          target.y + target.height
+        );
+        const overlapHeight = Math.max(0, overlapBottom - overlapTop);
+
+        visibleArea = visibleWidth * overlapHeight;
+        break;
+      }
+
+      case 'right': {
+        // 計算目標視窗在當前視窗右邊界右側的可見面積
+        const currentRight = current.x + current.width;
+        const visibleLeft = Math.max(target.x, currentRight);
+        const visibleRight = target.x + target.width;
+        const visibleWidth = Math.max(0, visibleRight - visibleLeft);
+
+        // Y 軸方向的重疊高度
+        const overlapTop = Math.max(current.y, target.y);
+        const overlapBottom = Math.min(
+          current.y + current.height,
+          target.y + target.height
+        );
+        const overlapHeight = Math.max(0, overlapBottom - overlapTop);
+
+        visibleArea = visibleWidth * overlapHeight;
+        break;
+      }
+    }
+
+    return visibleArea / targetArea;
   }
 
   private calculateDistance(
