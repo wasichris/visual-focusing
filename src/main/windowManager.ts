@@ -337,9 +337,9 @@ export class WindowManager {
         return win.bounds.y < currentTop && this.hasHorizontalOverlap(current.bounds, win.bounds);
       })
       .map((win) => {
-        const winCenter = this.getCenterPoint(win.bounds);
-        const verticalDistance = currentTop - win.bounds.y;
-        const horizontalOffset = Math.abs(currentCenter.x - winCenter.x);
+        const winBottom = win.bounds.y + win.bounds.height;
+        // 修正距離計算：有重疊時距離為0，優先比較可見面積
+        const verticalDistance = Math.max(0, currentTop - winBottom);
         
         // Z-order 懲罰：數字越大（越下層）懲罰越多
         const zOrderPenalty = (win.zIndex ?? 0) * 50;
@@ -347,15 +347,14 @@ export class WindowManager {
         // 可見面積比例：計算視窗在上方的可見面積比例
         const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'up');
         
-        // 加權距離：垂直距離 + 水平偏移x2 - 可見比例x500 + Z-order懲罰
-        // 可見比例越高，分數越低（越優先）
-        const weightedDistance = verticalDistance + horizontalOffset * 2 - visibleRatio * 500 + zOrderPenalty;
+        // 加權距離：垂直距離 - 可見比例x500 + Z-order懲罰
+        // 向上/向下搜尋不考慮水平偏移
+        const weightedDistance = verticalDistance - visibleRatio * 500 + zOrderPenalty;
         
         return {
           window: win,
           distance: weightedDistance,
           verticalDistance,
-          horizontalOffset,
           zOrderPenalty,
           visibleRatio,
         };
@@ -369,7 +368,7 @@ export class WindowManager {
       candidates.slice(0, 3).forEach((c, idx) => {
         logger.debug(
           `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]` +
-          `\n     加權分數:${c.distance.toFixed(0)} = 垂直${c.verticalDistance.toFixed(0)} + 水平×2(${(c.horizontalOffset * 2).toFixed(0)}) - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
+          `\n     加權分數:${c.distance.toFixed(0)} = 垂直${c.verticalDistance.toFixed(0)} - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
           `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
@@ -415,10 +414,8 @@ export class WindowManager {
         return winBottom > currentBottom && this.hasHorizontalOverlap(current.bounds, win.bounds);
       })
       .map((win) => {
-        const winCenter = this.getCenterPoint(win.bounds);
-        const winBottom = win.bounds.y + win.bounds.height;
-        const verticalDistance = winBottom - currentBottom;
-        const horizontalOffset = Math.abs(currentCenter.x - winCenter.x);
+        // 修正距離計算：有重疊時距離為0，優先比較可見面積
+        const verticalDistance = Math.max(0, win.bounds.y - currentBottom);
         
         // Z-order 懲罰：數字越大（越下層）懲罰越多
         const zOrderPenalty = (win.zIndex ?? 0) * 50;
@@ -426,14 +423,14 @@ export class WindowManager {
         // 可見面積比例：計算視窗在下方的可見面積比例
         const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'down');
         
-        // 加權距離：垂直距離 + 水平偏移x2 - 可見比例x500 + Z-order懲罰
-        const weightedDistance = verticalDistance + horizontalOffset * 2 - visibleRatio * 500 + zOrderPenalty;
+        // 加權距離：垂直距離 - 可見比例x500 + Z-order懲罰
+        // 向上/向下搜尋不考慮水平偏移
+        const weightedDistance = verticalDistance - visibleRatio * 500 + zOrderPenalty;
         
         return {
           window: win,
           distance: weightedDistance,
           verticalDistance,
-          horizontalOffset,
           zOrderPenalty,
           visibleRatio,
         };
@@ -447,7 +444,7 @@ export class WindowManager {
       candidates.slice(0, 3).forEach((c, idx) => {
         logger.debug(
           `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]` +
-          `\n     加權分數:${c.distance.toFixed(0)} = 垂直${c.verticalDistance.toFixed(0)} + 水平×2(${(c.horizontalOffset * 2).toFixed(0)}) - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
+          `\n     加權分數:${c.distance.toFixed(0)} = 垂直${c.verticalDistance.toFixed(0)} - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
           `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
@@ -491,9 +488,9 @@ export class WindowManager {
         return win.bounds.x < currentLeft && this.hasVerticalOverlap(current.bounds, win.bounds);
       })
       .map((win) => {
-        const winCenter = this.getCenterPoint(win.bounds);
-        const horizontalDistance = currentLeft - win.bounds.x;
-        const verticalOffset = Math.abs(currentCenter.y - winCenter.y);
+        const winRight = win.bounds.x + win.bounds.width;
+        // 修正距離計算：有重疊時距離為0，優先比較可見面積
+        const horizontalDistance = Math.max(0, currentLeft - winRight);
         
         // Z-order 懲罰：數字越大（越下層）懲罰越多
         const zOrderPenalty = (win.zIndex ?? 0) * 50;
@@ -501,14 +498,14 @@ export class WindowManager {
         // 可見面積比例：計算視窗在左方的可見面積比例
         const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'left');
         
-        // 加權距離：水平距離 + 垂直偏移x2 - 可見比例x500 + Z-order懲罰
-        const weightedDistance = horizontalDistance + verticalOffset * 2 - visibleRatio * 500 + zOrderPenalty;
+        // 加權距離：水平距離 - 可見比例x500 + Z-order懲罰
+        // 向左/向右搜尋不考慮垂直偏移
+        const weightedDistance = horizontalDistance - visibleRatio * 500 + zOrderPenalty;
         
         return {
           window: win,
           distance: weightedDistance,
           horizontalDistance,
-          verticalOffset,
           zOrderPenalty,
           visibleRatio,
         };
@@ -522,7 +519,7 @@ export class WindowManager {
       candidates.slice(0, 3).forEach((c, idx) => {
         logger.debug(
           `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]` +
-          `\n     加權分數:${c.distance.toFixed(0)} = 水平${c.horizontalDistance.toFixed(0)} + 垂直×2(${(c.verticalOffset * 2).toFixed(0)}) - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
+          `\n     加權分數:${c.distance.toFixed(0)} = 水平${c.horizontalDistance.toFixed(0)} - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
           `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
@@ -568,10 +565,8 @@ export class WindowManager {
         return winRight > currentRight && this.hasVerticalOverlap(current.bounds, win.bounds);
       })
       .map((win) => {
-        const winCenter = this.getCenterPoint(win.bounds);
-        const winRight = win.bounds.x + win.bounds.width;
-        const horizontalDistance = winRight - currentRight;
-        const verticalOffset = Math.abs(currentCenter.y - winCenter.y);
+        // 修正距離計算：有重疊時距離為0，優先比較可見面積
+        const horizontalDistance = Math.max(0, win.bounds.x - currentRight);
         
         // Z-order 懲罰：數字越大（越下層）懲罰越多
         const zOrderPenalty = (win.zIndex ?? 0) * 50;
@@ -579,14 +574,14 @@ export class WindowManager {
         // 可見面積比例：計算視窗在右方的可見面積比例
         const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'right');
         
-        // 加權距離：水平距離 + 垂直偏移x2 - 可見比例x500 + Z-order懲罰
-        const weightedDistance = horizontalDistance + verticalOffset * 2 - visibleRatio * 500 + zOrderPenalty;
+        // 加權距離：水平距離 - 可見比例x500 + Z-order懲罰
+        // 向左/向右搜尋不考慮垂直偏移
+        const weightedDistance = horizontalDistance - visibleRatio * 500 + zOrderPenalty;
         
         return {
           window: win,
           distance: weightedDistance,
           horizontalDistance,
-          verticalOffset,
           zOrderPenalty,
           visibleRatio,
         };
@@ -600,7 +595,7 @@ export class WindowManager {
       candidates.slice(0, 3).forEach((c, idx) => {
         logger.debug(
           `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]` +
-          `\n     加權分數:${c.distance.toFixed(0)} = 水平${c.horizontalDistance.toFixed(0)} + 垂直×2(${(c.verticalOffset * 2).toFixed(0)}) - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
+          `\n     加權分數:${c.distance.toFixed(0)} = 水平${c.horizontalDistance.toFixed(0)} - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
           `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
