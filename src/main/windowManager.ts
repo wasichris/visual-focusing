@@ -347,8 +347,10 @@ export class WindowManager {
         // 可見面積比例：計算視窗在上方的可見面積比例
         const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'up');
         
+        // 檢查是否與當前視窗有重疊（X和Y都有重疊）
+        const hasCompleteOverlap = this.hasCompleteOverlap(current.bounds, win.bounds);
+        
         // 加權距離：垂直距離 - 可見比例x500 + Z-order懲罰
-        // 向上/向下搜尋不考慮水平偏移
         const weightedDistance = verticalDistance - visibleRatio * 500 + zOrderPenalty;
         
         return {
@@ -357,23 +359,34 @@ export class WindowManager {
           verticalDistance,
           zOrderPenalty,
           visibleRatio,
+          hasCompleteOverlap,
         };
-      })
-      .sort((a, b) => a.distance - b.distance);
+      });
 
-    logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個`);
+    // 分成兩組：有重疊的 vs 沒重疊的
+    const overlappingCandidates = candidates.filter(c => c.hasCompleteOverlap);
+    const nonOverlappingCandidates = candidates.filter(c => !c.hasCompleteOverlap);
+
+    logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個 (重疊:${overlappingCandidates.length}, 不重疊:${nonOverlappingCandidates.length})`);
     
-    if (candidates.length > 0) {
-      logger.debug(`排序後的候選清單 (前3名):`);
-      candidates.slice(0, 3).forEach((c, idx) => {
+    // 優先處理有重疊的組別
+    const finalCandidates = overlappingCandidates.length > 0 
+      ? overlappingCandidates.sort((a, b) => a.distance - b.distance)
+      : nonOverlappingCandidates.sort((a, b) => a.distance - b.distance);
+    
+    if (finalCandidates.length > 0) {
+      const groupType = overlappingCandidates.length > 0 ? '【重疊組】' : '【不重疊組】';
+      logger.debug(`${groupType} 排序後的候選清單 (前3名):`);
+      finalCandidates.slice(0, 3).forEach((c, idx) => {
+        const overlapStatus = c.hasCompleteOverlap ? ' [重疊✓]' : '';
         logger.debug(
-          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]` +
+          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]${overlapStatus}` +
           `\n     加權分數:${c.distance.toFixed(0)} = 垂直${c.verticalDistance.toFixed(0)} - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
           `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
-      logger.debug(`\n→ 最終選擇: ${candidates[0].window.title} [Z:${candidates[0].window.zIndex}]`);
-      return candidates[0].window;
+      logger.debug(`\n→ 最終選擇: ${finalCandidates[0].window.title} [Z:${finalCandidates[0].window.zIndex}]`);
+      return finalCandidates[0].window;
     }
 
     // 後備搜尋：找左右方向的視窗
@@ -426,8 +439,10 @@ export class WindowManager {
         // 可見面積比例：計算視窗在下方的可見面積比例
         const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'down');
         
+        // 檢查是否與當前視窗有重疊（X和Y都有重疊）
+        const hasCompleteOverlap = this.hasCompleteOverlap(current.bounds, win.bounds);
+        
         // 加權距離：垂直距離 - 可見比例x500 + Z-order懲罰
-        // 向上/向下搜尋不考慮水平偏移
         const weightedDistance = verticalDistance - visibleRatio * 500 + zOrderPenalty;
         
         return {
@@ -436,23 +451,34 @@ export class WindowManager {
           verticalDistance,
           zOrderPenalty,
           visibleRatio,
+          hasCompleteOverlap,
         };
-      })
-      .sort((a, b) => a.distance - b.distance);
+      });
 
-    logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個`);
+    // 分成兩組：有重疊的 vs 沒重疊的
+    const overlappingCandidates = candidates.filter(c => c.hasCompleteOverlap);
+    const nonOverlappingCandidates = candidates.filter(c => !c.hasCompleteOverlap);
+
+    logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個 (重疊:${overlappingCandidates.length}, 不重疊:${nonOverlappingCandidates.length})`);
     
-    if (candidates.length > 0) {
-      logger.debug(`排序後的候選清單 (前3名):`);
-      candidates.slice(0, 3).forEach((c, idx) => {
+    // 優先處理有重疊的組別
+    const finalCandidates = overlappingCandidates.length > 0 
+      ? overlappingCandidates.sort((a, b) => a.distance - b.distance)
+      : nonOverlappingCandidates.sort((a, b) => a.distance - b.distance);
+    
+    if (finalCandidates.length > 0) {
+      const groupType = overlappingCandidates.length > 0 ? '【重疊組】' : '【不重疊組】';
+      logger.debug(`${groupType} 排序後的候選清單 (前3名):`);
+      finalCandidates.slice(0, 3).forEach((c, idx) => {
+        const overlapStatus = c.hasCompleteOverlap ? ' [重疊✓]' : '';
         logger.debug(
-          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]` +
+          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]${overlapStatus}` +
           `\n     加權分數:${c.distance.toFixed(0)} = 垂直${c.verticalDistance.toFixed(0)} - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
           `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
-      logger.debug(`\n→ 最終選擇: ${candidates[0].window.title}`);
-      return candidates[0].window;
+      logger.debug(`\n→ 最終選擇: ${finalCandidates[0].window.title}`);
+      return finalCandidates[0].window;
     }
 
     // 後備搜尋：找左右方向的視窗
@@ -504,8 +530,10 @@ export class WindowManager {
         // 可見面積比例：計算視窗在左方的可見面積比例
         const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'left');
         
+        // 檢查是否與當前視窗有重疊（X和Y都有重疊）
+        const hasCompleteOverlap = this.hasCompleteOverlap(current.bounds, win.bounds);
+        
         // 加權距離：水平距離 - 可見比例x500 + Z-order懲罰
-        // 向左/向右搜尋不考慮垂直偏移
         const weightedDistance = horizontalDistance - visibleRatio * 500 + zOrderPenalty;
         
         return {
@@ -514,17 +542,28 @@ export class WindowManager {
           horizontalDistance,
           zOrderPenalty,
           visibleRatio,
+          hasCompleteOverlap,
         };
-      })
-      .sort((a, b) => a.distance - b.distance);
+      });
 
-    logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個`);
+    // 分成兩組：有重疊的 vs 沒重疊的
+    const overlappingCandidates = candidates.filter(c => c.hasCompleteOverlap);
+    const nonOverlappingCandidates = candidates.filter(c => !c.hasCompleteOverlap);
+
+    logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個 (重疊:${overlappingCandidates.length}, 不重疊:${nonOverlappingCandidates.length})`);
     
-    if (candidates.length > 0) {
-      logger.debug(`排序後的候選清單 (前3名):`);
-      candidates.slice(0, 3).forEach((c, idx) => {
+    // 優先處理有重疊的組別
+    const finalCandidates = overlappingCandidates.length > 0 
+      ? overlappingCandidates.sort((a, b) => a.distance - b.distance)
+      : nonOverlappingCandidates.sort((a, b) => a.distance - b.distance);
+    
+    if (finalCandidates.length > 0) {
+      const groupType = overlappingCandidates.length > 0 ? '【重疊組】' : '【不重疊組】';
+      logger.debug(`${groupType} 排序後的候選清單 (前3名):`);
+      finalCandidates.slice(0, 3).forEach((c, idx) => {
+        const overlapStatus = c.hasCompleteOverlap ? ' [重疊✓]' : '';
         logger.debug(
-          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]` +
+          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]${overlapStatus}` +
           `\n     加權分數:${c.distance.toFixed(0)} = 水平${c.horizontalDistance.toFixed(0)} - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
           `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
@@ -583,8 +622,10 @@ export class WindowManager {
         // 可見面積比例：計算視窗在右方的可見面積比例
         const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'right');
         
+        // 檢查是否與當前視窗有重疊（X和Y都有重疊）
+        const hasCompleteOverlap = this.hasCompleteOverlap(current.bounds, win.bounds);
+        
         // 加權距離：水平距離 - 可見比例x500 + Z-order懲罰
-        // 向左/向右搜尋不考慮垂直偏移
         const weightedDistance = horizontalDistance - visibleRatio * 500 + zOrderPenalty;
         
         return {
@@ -593,23 +634,34 @@ export class WindowManager {
           horizontalDistance,
           zOrderPenalty,
           visibleRatio,
+          hasCompleteOverlap,
         };
-      })
-      .sort((a, b) => a.distance - b.distance);
+      });
 
-    logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個`);
+    // 分成兩組：有重疊的 vs 沒重疊的
+    const overlappingCandidates = candidates.filter(c => c.hasCompleteOverlap);
+    const nonOverlappingCandidates = candidates.filter(c => !c.hasCompleteOverlap);
+
+    logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個 (重疊:${overlappingCandidates.length}, 不重疊:${nonOverlappingCandidates.length})`);
     
-    if (candidates.length > 0) {
-      logger.debug(`排序後的候選清單 (前3名):`);
-      candidates.slice(0, 3).forEach((c, idx) => {
+    // 優先處理有重疊的組別
+    const finalCandidates = overlappingCandidates.length > 0 
+      ? overlappingCandidates.sort((a, b) => a.distance - b.distance)
+      : nonOverlappingCandidates.sort((a, b) => a.distance - b.distance);
+    
+    if (finalCandidates.length > 0) {
+      const groupType = overlappingCandidates.length > 0 ? '【重疊組】' : '【不重疊組】';
+      logger.debug(`${groupType} 排序後的候選清單 (前3名):`);
+      finalCandidates.slice(0, 3).forEach((c, idx) => {
+        const overlapStatus = c.hasCompleteOverlap ? ' [重疊✓]' : '';
         logger.debug(
-          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]` +
+          `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]${overlapStatus}` +
           `\n     加權分數:${c.distance.toFixed(0)} = 水平${c.horizontalDistance.toFixed(0)} - 可見×500(${(c.visibleRatio * 500).toFixed(0)}) + Z×50(${c.zOrderPenalty})` +
           `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
-      logger.debug(`\n→ 最終選擇: ${candidates[0].window.title}`);
-      return candidates[0].window;
+      logger.debug(`\n→ 最終選擇: ${finalCandidates[0].window.title}`);
+      return finalCandidates[0].window;
     }
 
     // 後備搜尋：找上下方向的視窗
