@@ -45,6 +45,12 @@ function Settings({
     setHasChanges(true);
   };
 
+  const handleDebugLogChange = (enableDebugLog: boolean) => {
+    const newConfig = { ...localConfig, enableDebugLog };
+    setLocalConfig(newConfig);
+    setHasChanges(true);
+  };
+
   const handleSave = () => {
     onSave(localConfig);
     setHasChanges(false);
@@ -119,12 +125,13 @@ function Settings({
             啟用快速鍵
           </span>
         </label>
-        
+
         <label
           style={{
             display: 'flex',
             alignItems: 'center',
             cursor: 'pointer',
+            marginBottom: '15px',
           }}
         >
           <input
@@ -137,8 +144,31 @@ function Settings({
             顯示切換通知
           </span>
         </label>
-        
-        <p style={{ margin: '10px 0 0 30px', fontSize: '14px', color: '#666' }}>
+
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            cursor: 'pointer',
+            marginBottom: '10px',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={localConfig.enableDebugLog ?? false}
+            onChange={(e) => handleDebugLogChange(e.target.checked)}
+            style={{ marginRight: '10px', width: '20px', height: '20px' }}
+          />
+          <span style={{ fontSize: '16px', fontWeight: '500' }}>
+            啟用除錯日誌
+          </span>
+        </label>
+
+        <p style={{ margin: '0 0 15px 30px', fontSize: '14px', color: '#666' }}>
+          除錯日誌會在 Console 顯示詳細的切換資訊，開發用途
+        </p>
+
+        <p style={{ margin: '0 0 0 0', fontSize: '14px', color: '#666' }}>
           {localConfig.enabled
             ? '快速鍵已啟用，可以使用以下組合鍵切換視窗'
             : '快速鍵已停用'}
@@ -180,7 +210,8 @@ function Settings({
         </div>
 
         <p style={{ marginTop: '15px', fontSize: '13px', color: '#666' }}>
-          💡 提示：使用 Command (⌘), Control (⌃), Option (⌥), Shift (⇧) 搭配方向鍵
+          💡 提示：使用 Command (⌘), Control (⌃), Option (⌥), Shift (⇧)
+          搭配方向鍵
         </p>
       </div>
 

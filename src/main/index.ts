@@ -53,30 +53,38 @@ function createWindow() {
 
 function setupConsoleForwarding() {
   if (!mainWindow) return;
-  
+
   const originalLog = console.log;
   const originalWarn = console.warn;
   const originalError = console.error;
   const originalDebug = console.debug;
-  
+
   console.log = (...args) => {
     originalLog(...args);
-    mainWindow?.webContents.executeJavaScript(`console.log(${JSON.stringify(args.map(String).join(' '))})`);
+    mainWindow?.webContents.executeJavaScript(
+      `console.log(${JSON.stringify(args.map(String).join(' '))})`
+    );
   };
-  
+
   console.warn = (...args) => {
     originalWarn(...args);
-    mainWindow?.webContents.executeJavaScript(`console.warn(${JSON.stringify(args.map(String).join(' '))})`);
+    mainWindow?.webContents.executeJavaScript(
+      `console.warn(${JSON.stringify(args.map(String).join(' '))})`
+    );
   };
-  
+
   console.error = (...args) => {
     originalError(...args);
-    mainWindow?.webContents.executeJavaScript(`console.error(${JSON.stringify(args.map(String).join(' '))})`);
+    mainWindow?.webContents.executeJavaScript(
+      `console.error(${JSON.stringify(args.map(String).join(' '))})`
+    );
   };
-  
+
   console.debug = (...args) => {
     originalDebug(...args);
-    mainWindow?.webContents.executeJavaScript(`console.debug(${JSON.stringify(args.map(String).join(' '))})`);
+    mainWindow?.webContents.executeJavaScript(
+      `console.debug(${JSON.stringify(args.map(String).join(' '))})`
+    );
   };
 }
 
@@ -99,13 +107,13 @@ function setupIpcHandlers() {
     (store as any).set('enabled', config.enabled);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (store as any).set('showNotifications', config.showNotifications);
-    
+
     if (config.enabled) {
       shortcutManager.updateShortcuts(config.shortcuts);
     } else {
       shortcutManager.unregisterShortcuts();
     }
-    
+
     return true;
   });
 
@@ -137,14 +145,19 @@ function setupIpcHandlers() {
 
 async function initializeApp() {
   logger.info('正在初始化 Visual Focusing...');
-  
+
   const hasPermission = await permissionsManager.checkAccessibilityPermission();
-  
+
   if (!hasPermission) {
     logger.warn('⚠️  缺少輔助使用權限，部分功能可能無法使用');
   } else {
     logger.info('✅ 已獲得輔助使用權限');
   }
+
+  // 讀取除錯設定並套用
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const enableDebugLog = (store as any).get('enableDebugLog') ?? false;
+  windowManagerInstance.setDebugMode(enableDebugLog);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const enabled = (store as any).get('enabled');
@@ -158,7 +171,7 @@ async function initializeApp() {
   } else {
     logger.info('快速鍵未啟用或缺少權限');
   }
-  
+
   logger.info('Visual Focusing 初始化完成');
 }
 

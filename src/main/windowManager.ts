@@ -10,7 +10,12 @@ export class WindowManager {
   private lastUpdateTime = 0;
   private readonly CACHE_DURATION = 500;
   private readonly MIN_WINDOW_SIZE = 50; // 最小視窗大小（避免偵測到極小視窗）
-  private readonly ENABLE_DEBUG_LOG = false; // 關閉除錯日誌以提升性能
+  private debugMode = false; // 除錯模式開關
+
+  setDebugMode(enabled: boolean): void {
+    this.debugMode = enabled;
+    logger.info(`除錯模式: ${enabled ? '已啟用' : '已關閉'}`);
+  }
 
   getAllWindows(): WindowInfo[] {
     const now = Date.now();
@@ -62,7 +67,7 @@ export class WindowManager {
               if (isDock) reasons.push('Dock');
               if (isSystemUI) reasons.push('系統UI');
               if (isNotificationCenter) reasons.push('通知中心');
-              if (this.ENABLE_DEBUG_LOG) {
+              if (this.debugMode) {
                 logger.debug(
                   `  [過濾] ${title || '(無標題)'} - ${reasons.join(', ')}`
                 );
@@ -101,7 +106,7 @@ export class WindowManager {
       this.lastUpdateTime = now;
 
       // 詳細記錄所有找到的視窗（包含 Z-order）
-      if (this.ENABLE_DEBUG_LOG) {
+      if (this.debugMode) {
         logger.debug(
           `獲取到 ${this.cachedWindows.length} 個有效視窗 (按 Z-order 排序)`
         );
@@ -324,7 +329,7 @@ export class WindowManager {
         return null;
       }
 
-      if (this.ENABLE_DEBUG_LOG) {
+      if (this.debugMode) {
         logger.debug(`[候選視窗] 共 ${allWindows.length} 個:`);
         allWindows.forEach((win, idx) => {
           logger.debug(
@@ -333,7 +338,7 @@ export class WindowManager {
         });
       }
 
-      if (this.ENABLE_DEBUG_LOG) {
+      if (this.debugMode) {
         logger.debug(`[可見性分析]`);
       }
 
@@ -341,37 +346,28 @@ export class WindowManager {
       // 注意：計算可見度時需要包含當前視窗，因為當前視窗可能遮擋其他視窗
       const allWindowsIncludingCurrent = [currentWindow, ...allWindows];
 
-      const visibleWindowsWithRatio: Array<{
-        window: WindowInfo;
-        visibleRatio: number;
-      }> = [];
-
-      allWindows.forEach((win) => {
+      const visibleWindows = allWindows.filter((win) => {
         const visibleRatio = this.calculateActualVisibleArea(
           win,
           allWindowsIncludingCurrent
         );
         const isVisible = visibleRatio > 0;
 
-        if (this.ENABLE_DEBUG_LOG) {
+        if (this.debugMode) {
           logger.debug(
             `  ${win.title}: ${(visibleRatio * 100).toFixed(1)}% ${isVisible ? '✓' : '✗完全被遮擋'}`
           );
         }
 
-        if (isVisible) {
-          visibleWindowsWithRatio.push({ window: win, visibleRatio });
-        }
+        return isVisible;
       });
-
-      const visibleWindows = visibleWindowsWithRatio.map((item) => item.window);
 
       if (visibleWindows.length === 0) {
         logger.debug('無可見視窗');
         return null;
       }
 
-      if (this.ENABLE_DEBUG_LOG) {
+      if (this.debugMode) {
         logger.debug(`[可見視窗] 共 ${visibleWindows.length} 個`);
       }
 
@@ -420,7 +416,7 @@ export class WindowManager {
     const currentCenter = this.getCenterPoint(current.bounds);
     const currentTop = current.bounds.y;
 
-    if (this.ENABLE_DEBUG_LOG) {
+    if (this.debugMode) {
       logger.debug(`\n=== 尋找上方視窗 ===`);
       logger.debug(`當前視窗: ${current.title}`);
       logger.debug(
@@ -1270,12 +1266,23 @@ export class WindowManager {
    * @param allWindows 所有視窗列表（已按 z-index 排序，0 是最上層）
    * @returns 可見面積比例 (0-1)
    */
+  /**
+   * 計算視窗的實際可見面積（考慮被其他視窗遮擋的情況）
+   * 使用快速算法：檢查是否完全被遮擋 + 最大重疊估算
+   * @param target 目標視窗
+   * @param allWindows 所有視窗列表（已按 z-index 排序，0 是最上層）
+   * @returns 可見面積比例 (0-1)
+   */
   private calculateActualVisibleArea(
     target: WindowInfo,
     allWindows: WindowInfo[]
   ): number {
     const targetArea = target.bounds.width * target.bounds.height;
     if (targetArea === 0) return 0;
+
+    // 預先計算目標視窗的邊界（避免重複計算）
+    const targetRight = target.bounds.x + target.bounds.width;
+    const targetBottom = target.bounds.y + target.bounds.height;
 
     // 找出所有在目標視窗上方的視窗（z-index 更小）
     const windowsAbove = allWindows.filter(
@@ -1290,43 +1297,44 @@ export class WindowManager {
       return 1.0;
     }
 
-    // 使用網格採樣法估算可見面積（更準確）
-    // 將目標視窗分成 10x10 的網格，檢查每個網格點是否被遮擋
-    const gridSize = 10;
-    const cellWidth = target.bounds.width / gridSize;
-    const cellHeight = target.bounds.height / gridSize;
+    // 快速檢查：是否被任何單一上層視窗完全遮擋
+    for (const upperWin of windowsAbove) {
+      const upperRight = upperWin.bounds.x + upperWin.bounds.width;
+      const upperBottom = upperWin.bounds.y + upperWin.bounds.height;
 
-    let visibleCells = 0;
-    const totalCells = gridSize * gridSize;
+      const isTotallyOccluded =
+        upperWin.bounds.x <= target.bounds.x &&
+        upperWin.bounds.y <= target.bounds.y &&
+        upperRight >= targetRight &&
+        upperBottom >= targetBottom;
 
-    for (let i = 0; i < gridSize; i++) {
-      for (let j = 0; j < gridSize; j++) {
-        // 計算網格中心點座標
-        const pointX = target.bounds.x + (i + 0.5) * cellWidth;
-        const pointY = target.bounds.y + (j + 0.5) * cellHeight;
-
-        // 檢查這個點是否被任何上層視窗遮擋
-        let isCovered = false;
-        for (const upperWin of windowsAbove) {
-          if (
-            pointX >= upperWin.bounds.x &&
-            pointX < upperWin.bounds.x + upperWin.bounds.width &&
-            pointY >= upperWin.bounds.y &&
-            pointY < upperWin.bounds.y + upperWin.bounds.height
-          ) {
-            isCovered = true;
-            break;
-          }
-        }
-
-        if (!isCovered) {
-          visibleCells++;
-        }
+      if (isTotallyOccluded) {
+        return 0; // 完全被遮擋
       }
     }
 
-    const visibleRatio = visibleCells / totalCells;
-    return visibleRatio;
+    // 簡化計算：有任何上層視窗但未完全遮擋，使用最大重疊估算
+    let maxOverlapRatio = 0;
+
+    for (const upperWin of windowsAbove) {
+      const upperRight = upperWin.bounds.x + upperWin.bounds.width;
+      const upperBottom = upperWin.bounds.y + upperWin.bounds.height;
+
+      // 計算重疊區域
+      const overlapX1 = Math.max(target.bounds.x, upperWin.bounds.x);
+      const overlapY1 = Math.max(target.bounds.y, upperWin.bounds.y);
+      const overlapX2 = Math.min(targetRight, upperRight);
+      const overlapY2 = Math.min(targetBottom, upperBottom);
+
+      if (overlapX1 < overlapX2 && overlapY1 < overlapY2) {
+        const overlapArea = (overlapX2 - overlapX1) * (overlapY2 - overlapY1);
+        const overlapRatio = overlapArea / targetArea;
+        maxOverlapRatio = Math.max(maxOverlapRatio, overlapRatio);
+      }
+    }
+
+    // 返回估算的可見比例（1 - 最大重疊比例）
+    return Math.max(0, 1 - maxOverlapRatio);
   }
 
   /**

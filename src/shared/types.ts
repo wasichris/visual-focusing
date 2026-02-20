@@ -24,6 +24,7 @@ export interface AppConfig {
   shortcuts: ShortcutConfig;
   enabled: boolean;
   showNotifications: boolean; // 是否顯示切換通知，預設關閉
+  enableDebugLog: boolean; // 是否啟用除錯日誌，預設關閉
 }
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
