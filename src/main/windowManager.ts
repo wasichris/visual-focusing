@@ -10,6 +10,7 @@ export class WindowManager {
   private lastUpdateTime = 0;
   private readonly CACHE_DURATION = 500;
   private readonly MIN_WINDOW_SIZE = 50; // 最小視窗大小（避免偵測到極小視窗）
+  private readonly ENABLE_DEBUG_LOG = false; // 關閉除錯日誌以提升性能
 
   getAllWindows(): WindowInfo[] {
     const now = Date.now();
@@ -61,9 +62,11 @@ export class WindowManager {
               if (isDock) reasons.push('Dock');
               if (isSystemUI) reasons.push('系統UI');
               if (isNotificationCenter) reasons.push('通知中心');
-              logger.debug(
-                `  [過濾] ${title || '(無標題)'} - ${reasons.join(', ')}`
-              );
+              if (this.ENABLE_DEBUG_LOG) {
+                logger.debug(
+                  `  [過濾] ${title || '(無標題)'} - ${reasons.join(', ')}`
+                );
+              }
             }
 
             return (
@@ -98,16 +101,18 @@ export class WindowManager {
       this.lastUpdateTime = now;
 
       // 詳細記錄所有找到的視窗（包含 Z-order）
-      logger.debug(
-        `獲取到 ${this.cachedWindows.length} 個有效視窗 (按 Z-order 排序)`
-      );
-      this.cachedWindows.forEach((win, idx) => {
+      if (this.ENABLE_DEBUG_LOG) {
         logger.debug(
-          `  [Z${win.zIndex}] ${win.title} (${win.owner}) - ` +
-            `位置:(${win.bounds.x}, ${win.bounds.y}) ` +
-            `大小:${win.bounds.width}x${win.bounds.height}`
+          `獲取到 ${this.cachedWindows.length} 個有效視窗 (按 Z-order 排序)`
         );
-      });
+        this.cachedWindows.forEach((win, idx) => {
+          logger.debug(
+            `  [Z${win.zIndex}] ${win.title} (${win.owner}) - ` +
+              `位置:(${win.bounds.x}, ${win.bounds.y}) ` +
+              `大小:${win.bounds.width}x${win.bounds.height}`
+          );
+        });
+      }
 
       return this.cachedWindows;
     } catch (error) {
@@ -290,6 +295,7 @@ export class WindowManager {
   }
 
   findWindowInDirection(direction: Direction): WindowInfo | null {
+    const startTime = Date.now();
     try {
       const currentWindow = this.getActiveWindow();
       if (!currentWindow) {
@@ -298,7 +304,7 @@ export class WindowManager {
       }
 
       logger.debug(
-        `\n[查詢] 方向=${direction.toUpperCase()} 當前=${currentWindow.title} (${currentWindow.bounds.x},${currentWindow.bounds.y}) ${currentWindow.bounds.width}×${currentWindow.bounds.height}`
+        `\n[查詢] 方向=${direction.toUpperCase()} 當前=${currentWindow.title}`
       );
 
       const allWindows = this.getAllWindows().filter((win) => {
@@ -318,14 +324,18 @@ export class WindowManager {
         return null;
       }
 
-      logger.debug(`[候選視窗] 共 ${allWindows.length} 個:`);
-      allWindows.forEach((win, idx) => {
-        logger.debug(
-          `  ${idx + 1}. ${win.title} Z:${win.zIndex} (${win.bounds.x},${win.bounds.y}) ${win.bounds.width}×${win.bounds.height}`
-        );
-      });
+      if (this.ENABLE_DEBUG_LOG) {
+        logger.debug(`[候選視窗] 共 ${allWindows.length} 個:`);
+        allWindows.forEach((win, idx) => {
+          logger.debug(
+            `  ${idx + 1}. ${win.title} Z:${win.zIndex} (${win.bounds.x},${win.bounds.y}) ${win.bounds.width}×${win.bounds.height}`
+          );
+        });
+      }
 
-      logger.debug(`[可見性分析]`);
+      if (this.ENABLE_DEBUG_LOG) {
+        logger.debug(`[可見性分析]`);
+      }
 
       // 過濾出實際有露出的視窗（可見面積 > 0）
       // 注意：計算可見度時需要包含當前視窗，因為當前視窗可能遮擋其他視窗
@@ -343,9 +353,11 @@ export class WindowManager {
         );
         const isVisible = visibleRatio > 0;
 
-        logger.debug(
-          `  ${win.title}: ${(visibleRatio * 100).toFixed(1)}% ${isVisible ? '✓' : '✗完全被遮擋'}`
-        );
+        if (this.ENABLE_DEBUG_LOG) {
+          logger.debug(
+            `  ${win.title}: ${(visibleRatio * 100).toFixed(1)}% ${isVisible ? '✓' : '✗完全被遮擋'}`
+          );
+        }
 
         if (isVisible) {
           visibleWindowsWithRatio.push({ window: win, visibleRatio });
@@ -359,7 +371,9 @@ export class WindowManager {
         return null;
       }
 
-      logger.debug(`[可見視窗] 共 ${visibleWindows.length} 個`);
+      if (this.ENABLE_DEBUG_LOG) {
+        logger.debug(`[可見視窗] 共 ${visibleWindows.length} 個`);
+      }
 
       let targetWindow: WindowInfo | null = null;
 
@@ -379,10 +393,9 @@ export class WindowManager {
       }
 
       if (targetWindow) {
+        const elapsed = Date.now() - startTime;
         logger.info(
-          `找到 ${direction} 方向的視窗: ${targetWindow.title} (ID:${targetWindow.id}, Z-order:${targetWindow.zIndex ?? 'N/A'}) ` +
-            `位置:(${targetWindow.bounds.x}, ${targetWindow.bounds.y}) ` +
-            `大小:${targetWindow.bounds.width}x${targetWindow.bounds.height}`
+          `找到 ${direction} 方向的視窗: ${targetWindow.title} (耗時: ${elapsed}ms)`
         );
       } else {
         logger.debug(`${direction} 方向沒有可切換的視窗`);
@@ -392,6 +405,11 @@ export class WindowManager {
     } catch (error) {
       logger.error(`尋找 ${direction} 方向視窗時發生錯誤`, error);
       return null;
+    } finally {
+      const elapsed = Date.now() - startTime;
+      if (elapsed > 100) {
+        logger.warn(`視窗查詢耗時過長: ${elapsed}ms`);
+      }
     }
   }
 
@@ -402,31 +420,17 @@ export class WindowManager {
     const currentCenter = this.getCenterPoint(current.bounds);
     const currentTop = current.bounds.y;
 
-    logger.debug(`\n=== 尋找上方視窗 ===`);
-    logger.debug(`當前視窗: ${current.title}`);
-    logger.debug(
-      `  位置: (${current.bounds.x}, ${current.bounds.y}) 大小: ${current.bounds.width}x${current.bounds.height}`
-    );
-    logger.debug(`  頂部 Y = ${currentTop}`);
-    logger.debug(
-      `  X 範圍: ${current.bounds.x} ~ ${current.bounds.x + current.bounds.width}`
-    );
-
-    // 先記錄所有視窗的過濾情況
-    windows.forEach((win) => {
-      const winRight = win.bounds.x + win.bounds.width;
-      const hasOverlap = this.hasHorizontalOverlap(current.bounds, win.bounds);
-      const yCondition = win.bounds.y < currentTop;
-      const passFilter = yCondition && hasOverlap;
-
+    if (this.ENABLE_DEBUG_LOG) {
+      logger.debug(`\n=== 尋找上方視窗 ===`);
+      logger.debug(`當前視窗: ${current.title}`);
       logger.debug(
-        `\n檢查: ${win.title} [Z:${win.zIndex ?? 'N/A'}]` +
-          `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
-          `\n  條件1 [頂部Y]: ${win.bounds.y} < ${currentTop} ? ${yCondition ? '✓ 是' : '✗ 否'}` +
-          `\n  條件2 [X重疊]: 當前[${current.bounds.x}~${current.bounds.x + current.bounds.width}] vs 目標[${win.bounds.x}~${winRight}] ? ${hasOverlap ? '✓ 有重疊' : '✗ 無重疊'}` +
-          `\n  → 結果: ${passFilter ? '✓✓ 符合條件' : '✗✗ 不符合'}`
+        `  位置: (${current.bounds.x}, ${current.bounds.y}) 大小: ${current.bounds.width}x${current.bounds.height}`
       );
-    });
+      logger.debug(`  頂部 Y = ${currentTop}`);
+      logger.debug(
+        `  X 範圍: ${current.bounds.x} ~ ${current.bounds.x + current.bounds.width}`
+      );
+    }
 
     const candidates = windows
       .filter((win) => {
@@ -1287,8 +1291,8 @@ export class WindowManager {
     }
 
     // 使用網格採樣法估算可見面積（更準確）
-    // 將目標視窗分成 20x20 的網格，檢查每個網格點是否被遮擋
-    const gridSize = 20;
+    // 將目標視窗分成 10x10 的網格，檢查每個網格點是否被遮擋
+    const gridSize = 10;
     const cellWidth = target.bounds.width / gridSize;
     const cellHeight = target.bounds.height / gridSize;
 
