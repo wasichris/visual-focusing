@@ -3,9 +3,6 @@ import type { WindowInfo, Direction, WindowBounds } from '../shared/types';
 import { logger } from './logger';
 
 export class WindowManager {
-  private cachedWindows: WindowInfo[] = [];
-  private lastUpdateTime = 0;
-  private readonly CACHE_DURATION = 500;
   private readonly MIN_WINDOW_SIZE = 50; // 最小視窗大小（避免偵測到極小視窗）
   private debugMode = false; // 除錯模式開關
 
@@ -15,18 +12,12 @@ export class WindowManager {
   }
 
   getAllWindows(): WindowInfo[] {
-    const now = Date.now();
-
-    if (now - this.lastUpdateTime < this.CACHE_DURATION) {
-      return this.cachedWindows;
-    }
-
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const windows = wm.getWindows();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.cachedWindows = windows
+      const result = windows
         .filter((win: any) => {
           try {
             const bounds = win.getBounds();
@@ -100,14 +91,10 @@ export class WindowManager {
           };
         });
 
-      this.lastUpdateTime = now;
-
       // 詳細記錄所有找到的視窗（包含 Z-order）
       if (this.debugMode) {
-        logger.debug(
-          `獲取到 ${this.cachedWindows.length} 個有效視窗 (按 Z-order 排序)`
-        );
-        this.cachedWindows.forEach((win, idx) => {
+        logger.debug(`獲取到 ${result.length} 個有效視窗 (按 Z-order 排序)`);
+        result.forEach((win: WindowInfo) => {
           logger.debug(
             `  [Z${win.zIndex}] ${win.title} (${win.owner}) - ` +
               `位置:(${win.bounds.x}, ${win.bounds.y}) ` +
@@ -116,7 +103,7 @@ export class WindowManager {
         });
       }
 
-      return this.cachedWindows;
+      return result;
     } catch (error) {
       logger.error('獲取視窗列表失敗', error);
       return [];
@@ -1439,11 +1426,6 @@ export class WindowManager {
     y2: number
   ): number {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-  }
-
-  clearCache(): void {
-    this.cachedWindows = [];
-    this.lastUpdateTime = 0;
   }
 }
 
