@@ -11,87 +11,83 @@ export class WindowManager {
     logger.info(`除錯模式: ${enabled ? '已啟用' : '已關閉'}`);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private lastNativeWindowMap = new Map<number, any>();
+
   getAllWindows(): WindowInfo[] {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const windows = wm.getWindows();
 
+      const result: WindowInfo[] = [];
+      // 每次重建 native window Map（區域性，隨本次查詢結果而生）
+      this.lastNativeWindowMap.clear();
+      let zIndex = 0;
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = windows
-        .filter((win: any) => {
-          try {
-            const bounds = win.getBounds();
-            const title = win.getTitle();
-            const owner = win.getOwner();
-            const ownerName = owner?.name || '';
+      for (const win of windows as any[]) {
+        try {
+          // 每視窗只呼叫一次 getBounds/getTitle/getOwner
+          const bounds = win.getBounds();
+          const title = win.getTitle();
+          const owner = win.getOwner();
+          const ownerName = owner?.name || '';
 
-            // 排除條件
-            const isTooSmall =
-              bounds.width < this.MIN_WINDOW_SIZE ||
-              bounds.height < this.MIN_WINDOW_SIZE;
-            const hasNoTitle = title.length === 0;
-            const isMinimized = this.isMinimized(win);
-            const isDock = ownerName === 'Dock' || title === 'Dock';
-            const isSystemUI = title.includes('Item-0'); // 系統 UI 元素
-            const isNotificationCenter =
-              ownerName === 'NotificationCenter' ||
-              title.includes('通知中心') ||
-              title.includes('Notification Center');
+          // 排除條件（用已取得的 bounds 判斷 isMinimized）
+          const isTooSmall =
+            bounds.width < this.MIN_WINDOW_SIZE ||
+            bounds.height < this.MIN_WINDOW_SIZE;
+          const hasNoTitle = title.length === 0;
+          const isMinimizedWin = bounds.x < -10000 || bounds.y < -10000;
+          const isDock = ownerName === 'Dock' || title === 'Dock';
+          const isSystemUI = title.includes('Item-0');
+          const isNotificationCenter =
+            ownerName === 'NotificationCenter' ||
+            title.includes('通知中心') ||
+            title.includes('Notification Center');
 
-            // 記錄被過濾的視窗
-            if (
-              isTooSmall ||
-              hasNoTitle ||
-              isMinimized ||
-              isDock ||
-              isSystemUI ||
-              isNotificationCenter
-            ) {
+          if (
+            isTooSmall ||
+            hasNoTitle ||
+            isMinimizedWin ||
+            isDock ||
+            isSystemUI ||
+            isNotificationCenter
+          ) {
+            if (this.debugMode) {
               const reasons = [];
               if (isTooSmall)
                 reasons.push(`太小(${bounds.width}x${bounds.height})`);
               if (hasNoTitle) reasons.push('無標題');
-              if (isMinimized) reasons.push('已最小化');
+              if (isMinimizedWin) reasons.push('已最小化');
               if (isDock) reasons.push('Dock');
               if (isSystemUI) reasons.push('系統UI');
               if (isNotificationCenter) reasons.push('通知中心');
-              if (this.debugMode) {
-                logger.debug(
-                  `  [過濾] ${title || '(無標題)'} - ${reasons.join(', ')}`
-                );
-              }
+              logger.debug(
+                `  [過濾] ${title || '(無標題)'} - ${reasons.join(', ')}`
+              );
             }
-
-            return (
-              !isTooSmall &&
-              !hasNoTitle &&
-              !isMinimized &&
-              !isDock &&
-              !isSystemUI &&
-              !isNotificationCenter
-            );
-          } catch (err) {
-            logger.debug('過濾視窗時發生錯誤', err);
-            return false;
+            continue;
           }
-        })
-        .map((win: any, index: number) => {
-          const bounds = win.getBounds();
-          return {
+
+          this.lastNativeWindowMap.set(win.id, win);
+          result.push({
             id: win.id,
-            title: win.getTitle(),
-            owner: win.getOwner()?.name || 'Unknown',
+            title,
+            owner: ownerName || 'Unknown',
             bounds: {
               x: bounds.x || 0,
               y: bounds.y || 0,
               width: bounds.width || 0,
               height: bounds.height || 0,
             },
-            zIndex: index, // 記錄在原始列表中的順序（越小越在上層）
-          };
-        });
+            zIndex: zIndex++,
+          });
+        } catch (err) {
+          logger.debug('處理視窗時發生錯誤', err);
+        }
+      }
 
-      // 詳細記錄所有找到的視窗（包含 Z-order）
       if (this.debugMode) {
         logger.debug(`獲取到 ${result.length} 個有效視窗 (按 Z-order 排序)`);
         result.forEach((win: WindowInfo) => {
@@ -110,19 +106,7 @@ export class WindowManager {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private isMinimized(win: any): boolean {
-    try {
-      // node-window-manager 沒有直接的 isMinimized 方法
-      // 透過視窗位置判斷（最小化的視窗通常在螢幕外）
-      const bounds = win.getBounds();
-      return bounds.x < -10000 || bounds.y < -10000;
-    } catch {
-      return false;
-    }
-  }
-
-  getActiveWindow(): WindowInfo | null {
+  getActiveWindow(allWindows?: WindowInfo[]): WindowInfo | null {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const activeWin = wm.getActiveWindow();
@@ -136,12 +120,12 @@ export class WindowManager {
       const owner = activeWin.getOwner();
       const ownerName = owner?.path?.split('/').pop() || '';
 
-      // 套應相同的過濾條件
+      // 套應相同的過濾條件（用已取得的 bounds 判斷 isMinimized）
       const isTooSmall =
         (bounds.width ?? 0) < this.MIN_WINDOW_SIZE ||
         (bounds.height ?? 0) < this.MIN_WINDOW_SIZE;
       const hasNoTitle = title.length === 0;
-      const isMinimized = this.isMinimized(activeWin);
+      const isMinimized = (bounds.x ?? 0) < -10000 || (bounds.y ?? 0) < -10000;
       const isDock = ownerName === 'Dock' || title === 'Dock';
       const isSystemUI = title.includes('Item-0');
       const isNotificationCenter =
@@ -172,11 +156,11 @@ export class WindowManager {
         );
 
         // 嘗試找同一個 app 的其他有效視窗
-        const allWindows = this.getAllWindows();
+        const windowList = allWindows ?? this.getAllWindows();
 
         // 如果 owner 為空或 Unknown，用 title 匹配；否則用 owner 匹配
         const useTitle = !ownerName || ownerName === 'Unknown';
-        const sameAppWindows = allWindows.filter((win) => {
+        const sameAppWindows = windowList.filter((win) => {
           if (win.id === activeWin.id) return false; // 排除自己
 
           if (useTitle) {
@@ -227,9 +211,9 @@ export class WindowManager {
         zIndex: 0, // 暫時設為 0，稍後從 getAllWindows 更新
       };
 
-      // 從 getAllWindows 取得完整的視窗資訊（包含正確的 z-index）
-      const allWindows = this.getAllWindows();
-      const fullWindowInfo = allWindows.find(
+      // 從 allWindows 取得完整的視窗資訊（包含正確的 z-index）
+      const windowList = allWindows ?? this.getAllWindows();
+      const fullWindowInfo = windowList.find(
         (win) =>
           win.id === windowInfo.id ||
           (win.bounds.x === windowInfo.bounds.x &&
@@ -265,8 +249,18 @@ export class WindowManager {
 
   focusWindow(windowId: number): boolean {
     try {
+      // 優先使用本次查詢建立的 native window Map（避免重新呼叫 wm.getWindows()）
+      const nativeWin = this.lastNativeWindowMap.get(windowId);
+      if (nativeWin) {
+        nativeWin.bringToTop();
+        logger.info(`成功切換至視窗: ${nativeWin.getTitle()}`);
+        return true;
+      }
+
+      // Map 中找不到時才重新查詢
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const windows = wm.getWindows();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const targetWindow = windows.find((win: any) => win.id === windowId);
 
       if (targetWindow) {
@@ -286,7 +280,10 @@ export class WindowManager {
   findWindowInDirection(direction: Direction): WindowInfo | null {
     const startTime = Date.now();
     try {
-      const currentWindow = this.getActiveWindow();
+      // 整個流程只呼叫一次 getAllWindows()，結果共用給 getActiveWindow 和方向搜尋
+      const allWindowsRaw = this.getAllWindows();
+
+      const currentWindow = this.getActiveWindow(allWindowsRaw);
       if (!currentWindow) {
         logger.warn('無法獲取當前視窗，無法進行方向切換');
         return null;
@@ -296,7 +293,7 @@ export class WindowManager {
         `\n[查詢] 方向=${direction.toUpperCase()} 當前=${currentWindow.title}`
       );
 
-      const allWindows = this.getAllWindows().filter((win) => {
+      const allWindows = allWindowsRaw.filter((win) => {
         // 排除當前視窗（使用 ID 和位置雙重檢查）
         const isSameId = win.id === currentWindow.id;
         const isSamePosition =
@@ -327,13 +324,11 @@ export class WindowManager {
       }
 
       // 過濾出實際有露出的視窗（可見面積 > 0）
-      // 注意：計算可見度時需要包含當前視窗，因為當前視窗可能遮擋其他視窗
-      const allWindowsIncludingCurrent = [currentWindow, ...allWindows];
-
+      // 傳入 allWindowsRaw（包含當前視窗）確保遮擋計算正確
       const visibleWindows = allWindows.filter((win) => {
         const visibleRatio = this.calculateActualVisibleArea(
           win,
-          allWindowsIncludingCurrent
+          allWindowsRaw
         );
         const isVisible = visibleRatio > 0;
 
