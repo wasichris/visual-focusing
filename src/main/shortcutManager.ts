@@ -4,13 +4,20 @@ import type { ShortcutConfig, Direction, AppConfig } from '../shared/types';
 import { windowManagerInstance } from './windowManager';
 import { logger } from './logger';
 
+// 使用型別斷言繞過 ElectronStore 的型別限制
+type StoreWithMethods<T extends Record<string, any>> = Store<T> & {
+  get<K extends keyof T>(key: K): T[K];
+  get<K extends keyof T>(key: K, defaultValue: T[K]): T[K];
+  set<K extends keyof T>(key: K, value: T[K]): void;
+};
+
 export class ShortcutManager {
-  private store: Store<AppConfig>;
+  private store: StoreWithMethods<AppConfig>;
   private registered = false;
-  private suspended = false;  // 新增：暫停狀態
+  private suspended = false; // 新增：暫停狀態
 
   constructor() {
-    this.store = new Store({
+    this.store = new Store<AppConfig>({
       defaults: {
         shortcuts: {
           up: 'CommandOrControl+Alt+Up',
@@ -20,8 +27,9 @@ export class ShortcutManager {
         },
         enabled: true,
         showNotifications: false,
+        enableDebugLog: false,
       },
-    });
+    }) as StoreWithMethods<AppConfig>;
   }
 
   // 新增：暫停快捷鍵（設定時使用）
@@ -42,16 +50,15 @@ export class ShortcutManager {
       this.unregisterShortcuts();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const shortcuts = (this.store as any).get('shortcuts');
+    const shortcuts = this.store.get('shortcuts');
 
     try {
       const directions: Direction[] = ['up', 'down', 'left', 'right'];
       const failedShortcuts: string[] = [];
-      
+
       for (const direction of directions) {
         const shortcut = shortcuts[direction];
-        
+
         const success = globalShortcut.register(shortcut, () => {
           this.handleShortcut(direction);
         });
@@ -89,14 +96,12 @@ export class ShortcutManager {
   updateShortcuts(shortcuts: ShortcutConfig): boolean {
     logger.info('更新快速鍵設定');
     this.unregisterShortcuts();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this.store as any).set('shortcuts', shortcuts);
+    this.store.set('shortcuts', shortcuts);
     return this.registerShortcuts();
   }
 
   getShortcuts(): ShortcutConfig {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (this.store as any).get('shortcuts');
+    return this.store.get('shortcuts');
   }
 
   private handleShortcut(direction: Direction): void {
@@ -105,14 +110,14 @@ export class ShortcutManager {
       logger.debug(`快速鍵已暫停，忽略: ${direction}`);
       return;
     }
-    
+
     logger.debug(`觸發快速鍵: ${direction}`);
-    
+
     try {
-      const targetWindow = windowManagerInstance.findWindowInDirection(direction);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const showNotifications = (this.store as any).get('showNotifications', false);
-      
+      const targetWindow =
+        windowManagerInstance.findWindowInDirection(direction);
+      const showNotifications = this.store.get('showNotifications', false);
+
       if (targetWindow) {
         const success = windowManagerInstance.focusWindow(targetWindow.id);
         if (success) {
@@ -125,7 +130,7 @@ export class ShortcutManager {
               timeoutType: 'never',
             });
             notification.show();
-            
+
             // 1 秒後自動關閉通知
             setTimeout(() => {
               notification.close();
@@ -136,7 +141,7 @@ export class ShortcutManager {
         }
       } else {
         logger.debug(`${direction} 方向沒有找到視窗`);
-        
+
         // 根據設定顯示沒有視窗的提示
         if (showNotifications && Notification.isSupported()) {
           const notification = new Notification({

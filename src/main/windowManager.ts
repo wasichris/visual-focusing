@@ -1,9 +1,6 @@
-import * as windowManagerLib from 'node-window-manager';
+import { windowManager as wm } from 'node-window-manager';
 import type { WindowInfo, Direction, WindowBounds } from '../shared/types';
 import { logger } from './logger';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const wm = (windowManagerLib as any).windowManager;
 
 export class WindowManager {
   private cachedWindows: WindowInfo[] = [];
@@ -150,12 +147,12 @@ export class WindowManager {
       const bounds = activeWin.getBounds();
       const title = activeWin.getTitle();
       const owner = activeWin.getOwner();
-      const ownerName = owner?.name || '';
+      const ownerName = owner?.path?.split('/').pop() || '';
 
-      // 套用相同的過濾條件
+      // 套應相同的過濾條件
       const isTooSmall =
-        bounds.width < this.MIN_WINDOW_SIZE ||
-        bounds.height < this.MIN_WINDOW_SIZE;
+        (bounds.width ?? 0) < this.MIN_WINDOW_SIZE ||
+        (bounds.height ?? 0) < this.MIN_WINDOW_SIZE;
       const hasNoTitle = title.length === 0;
       const isMinimized = this.isMinimized(activeWin);
       const isDock = ownerName === 'Dock' || title === 'Dock';
@@ -1248,9 +1245,9 @@ export class WindowManager {
       }
 
       const screenBounds = monitor.getBounds();
-      const screenArea = screenBounds.width * screenBounds.height;
+      const screenArea = (screenBounds.width ?? 0) * (screenBounds.height ?? 0);
       const targetArea = target.width * target.height;
-      const ratio = targetArea / screenArea;
+      const ratio = screenArea > 0 ? targetArea / screenArea : 0;
 
       // 如果目標視窗佔螢幕90%以上，視為全螢幕
       return ratio >= 0.9;

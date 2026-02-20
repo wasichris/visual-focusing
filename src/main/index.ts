@@ -7,6 +7,13 @@ import { permissionsManager } from './permissions';
 import { windowManagerInstance } from './windowManager';
 import { logger } from './logger';
 
+// 使用型別斷言繞過 ElectronStore 的型別限制
+type StoreWithMethods<T extends Record<string, any>> = Store<T> & {
+  get<K extends keyof T>(key: K): T[K];
+  get<K extends keyof T>(key: K, defaultValue: T[K]): T[K];
+  set<K extends keyof T>(key: K, value: T[K]): void;
+};
+
 const store = new Store<AppConfig>({
   defaults: {
     shortcuts: {
@@ -17,8 +24,9 @@ const store = new Store<AppConfig>({
     },
     enabled: true,
     showNotifications: false, // 預設關閉通知
+    enableDebugLog: false, // 預設關閉除錯日誌
   },
-});
+}) as StoreWithMethods<AppConfig>;
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -91,22 +99,21 @@ function setupConsoleForwarding() {
 function setupIpcHandlers() {
   ipcMain.handle('get-config', () => {
     return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      shortcuts: (store as any).get('shortcuts'),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      enabled: (store as any).get('enabled'),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      showNotifications: (store as any).get('showNotifications'),
+      shortcuts: store.get('shortcuts'),
+      enabled: store.get('enabled'),
+      showNotifications: store.get('showNotifications'),
+      enableDebugLog: store.get('enableDebugLog'),
     };
   });
 
   ipcMain.handle('set-config', (_event, config: AppConfig) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (store as any).set('shortcuts', config.shortcuts);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (store as any).set('enabled', config.enabled);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (store as any).set('showNotifications', config.showNotifications);
+    store.set('shortcuts', config.shortcuts);
+    store.set('enabled', config.enabled);
+    store.set('showNotifications', config.showNotifications);
+    store.set('enableDebugLog', config.enableDebugLog);
+
+    // 更新 WindowManager 的除錯模式
+    windowManagerInstance.setDebugMode(config.enableDebugLog);
 
     if (config.enabled) {
       shortcutManager.updateShortcuts(config.shortcuts);
@@ -155,12 +162,10 @@ async function initializeApp() {
   }
 
   // 讀取除錯設定並套用
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const enableDebugLog = (store as any).get('enableDebugLog') ?? false;
+  const enableDebugLog = store.get('enableDebugLog', false);
   windowManagerInstance.setDebugMode(enableDebugLog);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const enabled = (store as any).get('enabled');
+  const enabled = store.get('enabled');
   if (enabled && hasPermission) {
     const success = shortcutManager.registerShortcuts();
     if (success) {
