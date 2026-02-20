@@ -13,7 +13,7 @@ export class WindowManager {
 
   getAllWindows(): WindowInfo[] {
     const now = Date.now();
-    
+
     if (now - this.lastUpdateTime < this.CACHE_DURATION) {
       return this.cachedWindows;
     }
@@ -21,7 +21,7 @@ export class WindowManager {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const windows = wm.getWindows();
-      
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this.cachedWindows = windows
         .filter((win: any) => {
@@ -30,36 +30,50 @@ export class WindowManager {
             const title = win.getTitle();
             const owner = win.getOwner();
             const ownerName = owner?.name || '';
-            
+
             // 排除條件
-            const isTooSmall = bounds.width < this.MIN_WINDOW_SIZE || 
-                              bounds.height < this.MIN_WINDOW_SIZE;
+            const isTooSmall =
+              bounds.width < this.MIN_WINDOW_SIZE ||
+              bounds.height < this.MIN_WINDOW_SIZE;
             const hasNoTitle = title.length === 0;
             const isMinimized = this.isMinimized(win);
             const isDock = ownerName === 'Dock' || title === 'Dock';
             const isSystemUI = title.includes('Item-0'); // 系統 UI 元素
-            const isNotificationCenter = ownerName === 'NotificationCenter' || 
-                                        title.includes('通知中心') || 
-                                        title.includes('Notification Center');
-            
+            const isNotificationCenter =
+              ownerName === 'NotificationCenter' ||
+              title.includes('通知中心') ||
+              title.includes('Notification Center');
+
             // 記錄被過濾的視窗
-            if (isTooSmall || hasNoTitle || isMinimized || isDock || isSystemUI || isNotificationCenter) {
+            if (
+              isTooSmall ||
+              hasNoTitle ||
+              isMinimized ||
+              isDock ||
+              isSystemUI ||
+              isNotificationCenter
+            ) {
               const reasons = [];
-              if (isTooSmall) reasons.push(`太小(${bounds.width}x${bounds.height})`);
+              if (isTooSmall)
+                reasons.push(`太小(${bounds.width}x${bounds.height})`);
               if (hasNoTitle) reasons.push('無標題');
               if (isMinimized) reasons.push('已最小化');
               if (isDock) reasons.push('Dock');
               if (isSystemUI) reasons.push('系統UI');
               if (isNotificationCenter) reasons.push('通知中心');
-              logger.debug(`  [過濾] ${title || '(無標題)'} - ${reasons.join(', ')}`);
+              logger.debug(
+                `  [過濾] ${title || '(無標題)'} - ${reasons.join(', ')}`
+              );
             }
-            
-            return !isTooSmall && 
-                   !hasNoTitle && 
-                   !isMinimized && 
-                   !isDock && 
-                   !isSystemUI &&
-                   !isNotificationCenter;
+
+            return (
+              !isTooSmall &&
+              !hasNoTitle &&
+              !isMinimized &&
+              !isDock &&
+              !isSystemUI &&
+              !isNotificationCenter
+            );
           } catch (err) {
             logger.debug('過濾視窗時發生錯誤', err);
             return false;
@@ -82,17 +96,19 @@ export class WindowManager {
         });
 
       this.lastUpdateTime = now;
-      
+
       // 詳細記錄所有找到的視窗（包含 Z-order）
-      logger.debug(`獲取到 ${this.cachedWindows.length} 個有效視窗 (按 Z-order 排序)`);
+      logger.debug(
+        `獲取到 ${this.cachedWindows.length} 個有效視窗 (按 Z-order 排序)`
+      );
       this.cachedWindows.forEach((win, idx) => {
         logger.debug(
           `  [Z${win.zIndex}] ${win.title} (${win.owner}) - ` +
-          `位置:(${win.bounds.x}, ${win.bounds.y}) ` +
-          `大小:${win.bounds.width}x${win.bounds.height}`
+            `位置:(${win.bounds.x}, ${win.bounds.y}) ` +
+            `大小:${win.bounds.width}x${win.bounds.height}`
         );
       });
-      
+
       return this.cachedWindows;
     } catch (error) {
       logger.error('獲取視窗列表失敗', error);
@@ -125,20 +141,29 @@ export class WindowManager {
       const title = activeWin.getTitle();
       const owner = activeWin.getOwner();
       const ownerName = owner?.name || '';
-      
+
       // 套用相同的過濾條件
-      const isTooSmall = bounds.width < this.MIN_WINDOW_SIZE || 
-                        bounds.height < this.MIN_WINDOW_SIZE;
+      const isTooSmall =
+        bounds.width < this.MIN_WINDOW_SIZE ||
+        bounds.height < this.MIN_WINDOW_SIZE;
       const hasNoTitle = title.length === 0;
       const isMinimized = this.isMinimized(activeWin);
       const isDock = ownerName === 'Dock' || title === 'Dock';
       const isSystemUI = title.includes('Item-0');
-      const isNotificationCenter = ownerName === 'NotificationCenter' || 
-                                   title.includes('通知中心') || 
-                                   title.includes('Notification Center');
-      
+      const isNotificationCenter =
+        ownerName === 'NotificationCenter' ||
+        title.includes('通知中心') ||
+        title.includes('Notification Center');
+
       // 如果當前視窗不符合條件，嘗試找同一個 app 的其他視窗
-      if (isTooSmall || hasNoTitle || isMinimized || isDock || isSystemUI || isNotificationCenter) {
+      if (
+        isTooSmall ||
+        hasNoTitle ||
+        isMinimized ||
+        isDock ||
+        isSystemUI ||
+        isNotificationCenter
+      ) {
         const reasons = [];
         if (isTooSmall) reasons.push(`太小(${bounds.width}x${bounds.height})`);
         if (hasNoTitle) reasons.push('無標題');
@@ -146,20 +171,20 @@ export class WindowManager {
         if (isDock) reasons.push('Dock');
         if (isSystemUI) reasons.push('系統UI');
         if (isNotificationCenter) reasons.push('通知中心');
-        
+
         logger.warn(
           `當前焦點視窗被過濾: ${title || '(無標題)'} (${ownerName}) - ${reasons.join(', ')} ` +
-          `位置:(${bounds.x}, ${bounds.y}) 大小:${bounds.width}x${bounds.height}`
+            `位置:(${bounds.x}, ${bounds.y}) 大小:${bounds.width}x${bounds.height}`
         );
-        
+
         // 嘗試找同一個 app 的其他有效視窗
         const allWindows = this.getAllWindows();
-        
+
         // 如果 owner 為空或 Unknown，用 title 匹配；否則用 owner 匹配
         const useTitle = !ownerName || ownerName === 'Unknown';
-        const sameAppWindows = allWindows.filter(win => {
+        const sameAppWindows = allWindows.filter((win) => {
           if (win.id === activeWin.id) return false; // 排除自己
-          
+
           if (useTitle) {
             // 用 title 匹配（精確匹配或包含）
             return win.title === title || (title && win.title.includes(title));
@@ -168,10 +193,12 @@ export class WindowManager {
             return win.owner === ownerName;
           }
         });
-        
-        logger.debug(`尋找同 App 視窗 - 使用 ${useTitle ? 'title' : 'owner'} 匹配: "${useTitle ? title : ownerName}"`);
+
+        logger.debug(
+          `尋找同 App 視窗 - 使用 ${useTitle ? 'title' : 'owner'} 匹配: "${useTitle ? title : ownerName}"`
+        );
         logger.debug(`找到 ${sameAppWindows.length} 個同 App 視窗`);
-        
+
         if (sameAppWindows.length > 0) {
           // 選擇最大的視窗
           const largestWindow = sameAppWindows.reduce((largest, current) => {
@@ -179,16 +206,16 @@ export class WindowManager {
             const currentArea = current.bounds.width * current.bounds.height;
             return currentArea > largestArea ? current : largest;
           });
-          
+
           logger.info(
             `回退至同 App 的其他視窗: ${largestWindow.title} (${largestWindow.owner}) ` +
-            `位置:(${largestWindow.bounds.x}, ${largestWindow.bounds.y}) ` +
-            `大小:${largestWindow.bounds.width}x${largestWindow.bounds.height}`
+              `位置:(${largestWindow.bounds.x}, ${largestWindow.bounds.y}) ` +
+              `大小:${largestWindow.bounds.width}x${largestWindow.bounds.height}`
           );
-          
+
           return largestWindow;
         }
-        
+
         logger.warn('找不到同 App 的其他有效視窗');
         return null;
       }
@@ -205,34 +232,35 @@ export class WindowManager {
         },
         zIndex: 0, // 暫時設為 0，稍後從 getAllWindows 更新
       };
-      
+
       // 從 getAllWindows 取得完整的視窗資訊（包含正確的 z-index）
       const allWindows = this.getAllWindows();
-      const fullWindowInfo = allWindows.find(win => 
-        win.id === windowInfo.id ||
-        (win.bounds.x === windowInfo.bounds.x &&
-         win.bounds.y === windowInfo.bounds.y &&
-         win.bounds.width === windowInfo.bounds.width &&
-         win.bounds.height === windowInfo.bounds.height)
+      const fullWindowInfo = allWindows.find(
+        (win) =>
+          win.id === windowInfo.id ||
+          (win.bounds.x === windowInfo.bounds.x &&
+            win.bounds.y === windowInfo.bounds.y &&
+            win.bounds.width === windowInfo.bounds.width &&
+            win.bounds.height === windowInfo.bounds.height)
       );
-      
+
       if (fullWindowInfo) {
         // 使用完整的視窗資訊（包含 z-index）
         logger.debug(
           `當前視窗: ${fullWindowInfo.title} (ID:${fullWindowInfo.id}) ` +
-          `位置:(${fullWindowInfo.bounds.x}, ${fullWindowInfo.bounds.y}) ` +
-          `大小:${fullWindowInfo.bounds.width}x${fullWindowInfo.bounds.height} ` +
-          `Z-index:${fullWindowInfo.zIndex}`
+            `位置:(${fullWindowInfo.bounds.x}, ${fullWindowInfo.bounds.y}) ` +
+            `大小:${fullWindowInfo.bounds.width}x${fullWindowInfo.bounds.height} ` +
+            `Z-index:${fullWindowInfo.zIndex}`
         );
         return fullWindowInfo;
       }
-      
+
       // 找不到的話使用原本的 windowInfo（不應該發生）
       logger.warn(
         `當前視窗: ${windowInfo.title} (ID:${windowInfo.id}) ` +
-        `位置:(${windowInfo.bounds.x}, ${windowInfo.bounds.y}) ` +
-        `大小:${windowInfo.bounds.width}x${windowInfo.bounds.height} ` +
-        `[警告] 在視窗列表中找不到對應的 z-index`
+          `位置:(${windowInfo.bounds.x}, ${windowInfo.bounds.y}) ` +
+          `大小:${windowInfo.bounds.width}x${windowInfo.bounds.height} ` +
+          `[警告] 在視窗列表中找不到對應的 z-index`
       );
       return windowInfo;
     } catch (error) {
@@ -246,13 +274,13 @@ export class WindowManager {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const windows = wm.getWindows();
       const targetWindow = windows.find((win: any) => win.id === windowId);
-      
+
       if (targetWindow) {
         targetWindow.bringToTop();
         logger.info(`成功切換至視窗: ${targetWindow.getTitle()}`);
         return true;
       }
-      
+
       logger.warn(`找不到 ID 為 ${windowId} 的視窗`);
       return false;
     } catch (error) {
@@ -269,51 +297,111 @@ export class WindowManager {
         return null;
       }
 
-      logger.debug(
-        `當前視窗: ${currentWindow.title} (ID:${currentWindow.id}) ` +
-        `位置:(${currentWindow.bounds.x}, ${currentWindow.bounds.y})`
-      );
+      // ============================================================
+      // 階段 1: 顯示當前視窗資訊
+      // ============================================================
+      logger.debug('\n' + '='.repeat(40));
+      logger.debug(`視窗切換查詢開始 - 方向: ${direction.toUpperCase()}`);
+      logger.debug('='.repeat(40));
+
+      logger.debug('\n【當前視窗】');
+      this.logWindowDetail(currentWindow, '當前');
 
       const allWindows = this.getAllWindows().filter((win) => {
         // 排除當前視窗（使用 ID 和位置雙重檢查）
         const isSameId = win.id === currentWindow.id;
-        const isSamePosition = 
+        const isSamePosition =
           win.bounds.x === currentWindow.bounds.x &&
           win.bounds.y === currentWindow.bounds.y &&
           win.bounds.width === currentWindow.bounds.width &&
           win.bounds.height === currentWindow.bounds.height;
-        
+
         return !isSameId && !isSamePosition;
       });
 
       if (allWindows.length === 0) {
-        logger.debug('沒有其他可切換的視窗');
+        logger.debug('\n沒有其他可切換的視窗');
+        logger.debug('='.repeat(40) + '\n');
         return null;
       }
 
-      logger.debug(`可切換的視窗數量: ${allWindows.length}`);
+      // ============================================================
+      // 階段 2: 顯示所有候選視窗的基本資訊
+      // ============================================================
+      logger.debug('\n' + '-'.repeat(40));
+      logger.debug(`階段 1: 所有候選視窗資訊（共 ${allWindows.length} 個）`);
+      logger.debug('-'.repeat(40));
+
+      allWindows.forEach((win, idx) => {
+        logger.debug(`\n[${idx + 1}] ${win.title}`);
+        this.logWindowDetail(win, null);
+      });
+
+      // ============================================================
+      // 階段 3: 計算並顯示可見性分析
+      // ============================================================
+      logger.debug('\n' + '-'.repeat(40));
+      logger.debug('階段 2: 可見性分析（根據 Z-index 計算實際露出區域）');
+      logger.debug('-'.repeat(40));
 
       // 過濾出實際有露出的視窗（可見面積 > 0）
       // 注意：計算可見度時需要包含當前視窗，因為當前視窗可能遮擋其他視窗
       const allWindowsIncludingCurrent = [currentWindow, ...allWindows];
-      
-      const visibleWindows = allWindows.filter((win) => {
-        const visibleRatio = this.calculateActualVisibleArea(win, allWindowsIncludingCurrent);
+
+      const visibleWindowsWithRatio: Array<{
+        window: WindowInfo;
+        visibleRatio: number;
+      }> = [];
+
+      allWindows.forEach((win) => {
+        const visibleRatio = this.calculateActualVisibleArea(
+          win,
+          allWindowsIncludingCurrent
+        );
         const isVisible = visibleRatio > 0;
-        
-        if (!isVisible) {
-          logger.debug(`  [過濾] ${win.title} - 完全被遮擋 (可見度: ${(visibleRatio * 100).toFixed(1)}%)`);
+
+        logger.debug(
+          `\n${win.title} (Z:${win.zIndex})` +
+            `\n  可見比例: ${(visibleRatio * 100).toFixed(1)}%` +
+            `\n  結果: ${isVisible ? '✓ 可見，列入查詢範圍' : '✗ 完全被遮擋，排除'}`
+        );
+
+        if (isVisible) {
+          visibleWindowsWithRatio.push({ window: win, visibleRatio });
         }
-        
-        return isVisible;
       });
 
+      const visibleWindows = visibleWindowsWithRatio.map((item) => item.window);
+
       if (visibleWindows.length === 0) {
+        logger.debug('\n' + '!'.repeat(40));
         logger.debug('沒有實際可見的視窗');
+        logger.debug('!'.repeat(40) + '\n');
         return null;
       }
 
-      logger.debug(`實際可見的視窗數量: ${visibleWindows.length}`);
+      // ============================================================
+      // 階段 4: 顯示可見視窗名單
+      // ============================================================
+      logger.debug('\n' + '-'.repeat(40));
+      logger.debug(`階段 3: 可見視窗名單（共 ${visibleWindows.length} 個）`);
+      logger.debug('-'.repeat(40));
+
+      visibleWindows.forEach((win, idx) => {
+        const ratio =
+          visibleWindowsWithRatio.find((item) => item.window.id === win.id)
+            ?.visibleRatio || 0;
+        logger.debug(
+          `  ${idx + 1}. ${win.title} (Z:${win.zIndex}) - 可見度: ${(ratio * 100).toFixed(1)}%`
+        );
+      });
+
+      // ============================================================
+      // 階段 5: 開始方向搜尋
+      // ============================================================
+      logger.debug('\n' + '-'.repeat(40));
+      logger.debug(`階段 4: 開始 ${direction.toUpperCase()} 方向搜尋`);
+      logger.debug('-'.repeat(40) + '\n');
 
       let targetWindow: WindowInfo | null = null;
 
@@ -335,8 +423,8 @@ export class WindowManager {
       if (targetWindow) {
         logger.info(
           `找到 ${direction} 方向的視窗: ${targetWindow.title} (ID:${targetWindow.id}, Z-order:${targetWindow.zIndex ?? 'N/A'}) ` +
-          `位置:(${targetWindow.bounds.x}, ${targetWindow.bounds.y}) ` +
-          `大小:${targetWindow.bounds.width}x${targetWindow.bounds.height}`
+            `位置:(${targetWindow.bounds.x}, ${targetWindow.bounds.y}) ` +
+            `大小:${targetWindow.bounds.width}x${targetWindow.bounds.height}`
         );
       } else {
         logger.debug(`${direction} 方向沒有可切換的視窗`);
@@ -358,9 +446,13 @@ export class WindowManager {
 
     logger.debug(`\n=== 尋找上方視窗 ===`);
     logger.debug(`當前視窗: ${current.title}`);
-    logger.debug(`  位置: (${current.bounds.x}, ${current.bounds.y}) 大小: ${current.bounds.width}x${current.bounds.height}`);
+    logger.debug(
+      `  位置: (${current.bounds.x}, ${current.bounds.y}) 大小: ${current.bounds.width}x${current.bounds.height}`
+    );
     logger.debug(`  頂部 Y = ${currentTop}`);
-    logger.debug(`  X 範圍: ${current.bounds.x} ~ ${current.bounds.x + current.bounds.width}`);
+    logger.debug(
+      `  X 範圍: ${current.bounds.x} ~ ${current.bounds.x + current.bounds.width}`
+    );
 
     // 先記錄所有視窗的過濾情況
     windows.forEach((win) => {
@@ -368,40 +460,53 @@ export class WindowManager {
       const hasOverlap = this.hasHorizontalOverlap(current.bounds, win.bounds);
       const yCondition = win.bounds.y < currentTop;
       const passFilter = yCondition && hasOverlap;
-      
+
       logger.debug(
         `\n檢查: ${win.title} [Z:${win.zIndex ?? 'N/A'}]` +
-        `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
-        `\n  條件1 [頂部Y]: ${win.bounds.y} < ${currentTop} ? ${yCondition ? '✓ 是' : '✗ 否'}` +
-        `\n  條件2 [X重疊]: 當前[${current.bounds.x}~${current.bounds.x + current.bounds.width}] vs 目標[${win.bounds.x}~${winRight}] ? ${hasOverlap ? '✓ 有重疊' : '✗ 無重疊'}` +
-        `\n  → 結果: ${passFilter ? '✓✓ 符合條件' : '✗✗ 不符合'}`
+          `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
+          `\n  條件1 [頂部Y]: ${win.bounds.y} < ${currentTop} ? ${yCondition ? '✓ 是' : '✗ 否'}` +
+          `\n  條件2 [X重疊]: 當前[${current.bounds.x}~${current.bounds.x + current.bounds.width}] vs 目標[${win.bounds.x}~${winRight}] ? ${hasOverlap ? '✓ 有重疊' : '✗ 無重疊'}` +
+          `\n  → 結果: ${passFilter ? '✓✓ 符合條件' : '✗✗ 不符合'}`
       );
     });
 
     const candidates = windows
       .filter((win) => {
-        return win.bounds.y < currentTop && this.hasHorizontalOverlap(current.bounds, win.bounds);
+        return (
+          win.bounds.y < currentTop &&
+          this.hasHorizontalOverlap(current.bounds, win.bounds)
+        );
       })
       .map((win) => {
         const winBottom = win.bounds.y + win.bounds.height;
         // 修正距離計算：有重疊時距離為0，優先比較可見面積
         const verticalDistance = Math.max(0, currentTop - winBottom);
-        
+
         // Z-order 懲罰：數字越大（越下層）懲罰越多
         const zOrderPenalty = (win.zIndex ?? 0) * 50;
-        
+
         // 可見面積比例：計算視窗在上方的可見面積比例
-        const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'up');
-        
+        const visibleRatio = this.calculateVisibleAreaRatio(
+          current.bounds,
+          win.bounds,
+          'up'
+        );
+
         // 檢查是否與當前視窗有重疊（X和Y都有重疊）
-        const hasCompleteOverlap = this.hasCompleteOverlap(current.bounds, win.bounds);
-        
+        const hasCompleteOverlap = this.hasCompleteOverlap(
+          current.bounds,
+          win.bounds
+        );
+
         // 檢查是否為全螢幕包含視窗
-        const isFullscreen = this.isFullscreenContaining(current.bounds, win.bounds);
-        
+        const isFullscreen = this.isFullscreenContaining(
+          current.bounds,
+          win.bounds
+        );
+
         // 加權分數：可見面積加成 - 距離懲罰 - Z-order懲罰（分數越高越優先）
         const score = visibleRatio * 500 - verticalDistance - zOrderPenalty;
-        
+
         return {
           window: win,
           score,
@@ -414,38 +519,54 @@ export class WindowManager {
       });
 
     // 分成三組：有重疊的 > 沒重疊的 > 全螢幕包含的
-    const overlappingNormalCandidates = candidates.filter(c => c.hasCompleteOverlap && !c.isFullscreen);
-    const nonOverlappingNormalCandidates = candidates.filter(c => !c.hasCompleteOverlap && !c.isFullscreen);
-    const fullscreenCandidates = candidates.filter(c => c.isFullscreen);
+    const overlappingNormalCandidates = candidates.filter(
+      (c) => c.hasCompleteOverlap && !c.isFullscreen
+    );
+    const nonOverlappingNormalCandidates = candidates.filter(
+      (c) => !c.hasCompleteOverlap && !c.isFullscreen
+    );
+    const fullscreenCandidates = candidates.filter((c) => c.isFullscreen);
 
-    logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個 (重疊:${overlappingNormalCandidates.length}, 不重疊:${nonOverlappingNormalCandidates.length}, 全螢幕:${fullscreenCandidates.length})`);
-    
+    logger.debug(
+      `\n符合條件的候選視窗: ${candidates.length} 個 (重疊:${overlappingNormalCandidates.length}, 不重疊:${nonOverlappingNormalCandidates.length}, 全螢幕:${fullscreenCandidates.length})`
+    );
+
     // 優先處理有重疊的 > 無重疊的 > 全螢幕的（分數由高到低排序）
     let finalCandidates: typeof candidates = [];
     let groupType = '';
-    
+
     if (overlappingNormalCandidates.length > 0) {
-      finalCandidates = overlappingNormalCandidates.sort((a, b) => b.score - a.score);
+      finalCandidates = overlappingNormalCandidates.sort(
+        (a, b) => b.score - a.score
+      );
       groupType = '【重疊組】';
     } else if (nonOverlappingNormalCandidates.length > 0) {
-      finalCandidates = nonOverlappingNormalCandidates.sort((a, b) => b.score - a.score);
+      finalCandidates = nonOverlappingNormalCandidates.sort(
+        (a, b) => b.score - a.score
+      );
       groupType = '【不重疊組】';
     } else if (fullscreenCandidates.length > 0) {
       finalCandidates = fullscreenCandidates.sort((a, b) => b.score - a.score);
       groupType = '【全螢幕組】';
     }
-    
+
     if (finalCandidates.length > 0) {
       logger.debug(`${groupType} 排序後的候選清單 (前3名):`);
       finalCandidates.slice(0, 3).forEach((c, idx) => {
-        const statusLabel = c.isFullscreen ? ' [全螢幕]' : (c.hasCompleteOverlap ? ' [重疊✓]' : '');
+        const statusLabel = c.isFullscreen
+          ? ' [全螢幕]'
+          : c.hasCompleteOverlap
+            ? ' [重疊✓]'
+            : '';
         logger.debug(
           `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]${statusLabel}` +
-          `\n     加權分數:${c.score.toFixed(0)} = 可見×500(${(c.visibleRatio * 500).toFixed(0)}) - 垂直距離(${c.verticalDistance.toFixed(0)}) - Z懲罰(${c.zOrderPenalty})` +
-          `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
+            `\n     加權分數:${c.score.toFixed(0)} = 可見×500(${(c.visibleRatio * 500).toFixed(0)}) - 垂直距離(${c.verticalDistance.toFixed(0)}) - Z懲罰(${c.zOrderPenalty})` +
+            `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
-      logger.debug(`\n→ 最終選擇: ${finalCandidates[0].window.title} [Z:${finalCandidates[0].window.zIndex}]`);
+      logger.debug(
+        `\n→ 最終選擇: ${finalCandidates[0].window.title} [Z:${finalCandidates[0].window.zIndex}]`
+      );
       return finalCandidates[0].window;
     }
 
@@ -463,9 +584,13 @@ export class WindowManager {
 
     logger.debug(`\n=== 尋找下方視窗 ===`);
     logger.debug(`當前視窗: ${current.title}`);
-    logger.debug(`  位置: (${current.bounds.x}, ${current.bounds.y}) 大小: ${current.bounds.width}x${current.bounds.height}`);
+    logger.debug(
+      `  位置: (${current.bounds.x}, ${current.bounds.y}) 大小: ${current.bounds.width}x${current.bounds.height}`
+    );
     logger.debug(`  底部 Y = ${currentBottom}`);
-    logger.debug(`  X 範圍: ${current.bounds.x} ~ ${current.bounds.x + current.bounds.width}`);
+    logger.debug(
+      `  X 範圍: ${current.bounds.x} ~ ${current.bounds.x + current.bounds.width}`
+    );
 
     // 先記錄所有視窗的過濾情況
     windows.forEach((win) => {
@@ -474,40 +599,53 @@ export class WindowManager {
       const hasOverlap = this.hasHorizontalOverlap(current.bounds, win.bounds);
       const yCondition = winBottom > currentBottom;
       const passFilter = yCondition && hasOverlap;
-      
+
       logger.debug(
         `\n檢查: ${win.title} [Z:${win.zIndex ?? 'N/A'}]` +
-        `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
-        `\n  條件1 [底部Y]: ${winBottom} > ${currentBottom} ? ${yCondition ? '✓ 是' : '✗ 否'}` +
-        `\n  條件2 [X重疊]: 當前[${current.bounds.x}~${current.bounds.x + current.bounds.width}] vs 目標[${win.bounds.x}~${winRight}] ? ${hasOverlap ? '✓ 有重疊' : '✗ 無重疊'}` +
-        `\n  → 結果: ${passFilter ? '✓✓ 符合條件' : '✗✗ 不符合'}`
+          `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
+          `\n  條件1 [底部Y]: ${winBottom} > ${currentBottom} ? ${yCondition ? '✓ 是' : '✗ 否'}` +
+          `\n  條件2 [X重疊]: 當前[${current.bounds.x}~${current.bounds.x + current.bounds.width}] vs 目標[${win.bounds.x}~${winRight}] ? ${hasOverlap ? '✓ 有重疊' : '✗ 無重疊'}` +
+          `\n  → 結果: ${passFilter ? '✓✓ 符合條件' : '✗✗ 不符合'}`
       );
     });
 
     const candidates = windows
       .filter((win) => {
         const winBottom = win.bounds.y + win.bounds.height;
-        return winBottom > currentBottom && this.hasHorizontalOverlap(current.bounds, win.bounds);
+        return (
+          winBottom > currentBottom &&
+          this.hasHorizontalOverlap(current.bounds, win.bounds)
+        );
       })
       .map((win) => {
         // 修正距離計算：有重疊時距離為0，優先比較可見面積
         const verticalDistance = Math.max(0, win.bounds.y - currentBottom);
-        
+
         // Z-order 懲罰：數字越大（越下層）懲罰越多
         const zOrderPenalty = (win.zIndex ?? 0) * 50;
-        
+
         // 可見面積比例：計算視窗在下方的可見面積比例
-        const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'down');
-        
+        const visibleRatio = this.calculateVisibleAreaRatio(
+          current.bounds,
+          win.bounds,
+          'down'
+        );
+
         // 檢查是否與當前視窗有重疊（X和Y都有重疊）
-        const hasCompleteOverlap = this.hasCompleteOverlap(current.bounds, win.bounds);
-        
+        const hasCompleteOverlap = this.hasCompleteOverlap(
+          current.bounds,
+          win.bounds
+        );
+
         // 檢查是否為全螢幕包含視窗
-        const isFullscreen = this.isFullscreenContaining(current.bounds, win.bounds);
-        
+        const isFullscreen = this.isFullscreenContaining(
+          current.bounds,
+          win.bounds
+        );
+
         // 加權分數：可見面積加成 - 距離懲罰 - Z-order懲罰（分數越高越優先）
         const score = visibleRatio * 500 - verticalDistance - zOrderPenalty;
-        
+
         return {
           window: win,
           score,
@@ -520,35 +658,49 @@ export class WindowManager {
       });
 
     // 分成三組：有重疊的 > 沒重疊的 > 全螢幕包含的
-    const overlappingNormalCandidates = candidates.filter(c => c.hasCompleteOverlap && !c.isFullscreen);
-    const nonOverlappingNormalCandidates = candidates.filter(c => !c.hasCompleteOverlap && !c.isFullscreen);
-    const fullscreenCandidates = candidates.filter(c => c.isFullscreen);
+    const overlappingNormalCandidates = candidates.filter(
+      (c) => c.hasCompleteOverlap && !c.isFullscreen
+    );
+    const nonOverlappingNormalCandidates = candidates.filter(
+      (c) => !c.hasCompleteOverlap && !c.isFullscreen
+    );
+    const fullscreenCandidates = candidates.filter((c) => c.isFullscreen);
 
-    logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個 (重疊:${overlappingNormalCandidates.length}, 不重疊:${nonOverlappingNormalCandidates.length}, 全螢幕:${fullscreenCandidates.length})`);
-    
+    logger.debug(
+      `\n符合條件的候選視窗: ${candidates.length} 個 (重疊:${overlappingNormalCandidates.length}, 不重疊:${nonOverlappingNormalCandidates.length}, 全螢幕:${fullscreenCandidates.length})`
+    );
+
     // 優先處理有重疊的 > 無重疊的 > 全螢幕的（分數由高到低排序）
     let finalCandidates: typeof candidates = [];
     let groupType = '';
-    
+
     if (overlappingNormalCandidates.length > 0) {
-      finalCandidates = overlappingNormalCandidates.sort((a, b) => b.score - a.score);
+      finalCandidates = overlappingNormalCandidates.sort(
+        (a, b) => b.score - a.score
+      );
       groupType = '【重疊組】';
     } else if (nonOverlappingNormalCandidates.length > 0) {
-      finalCandidates = nonOverlappingNormalCandidates.sort((a, b) => b.score - a.score);
+      finalCandidates = nonOverlappingNormalCandidates.sort(
+        (a, b) => b.score - a.score
+      );
       groupType = '【不重疊組】';
     } else if (fullscreenCandidates.length > 0) {
       finalCandidates = fullscreenCandidates.sort((a, b) => b.score - a.score);
       groupType = '【全螢幕組】';
     }
-    
+
     if (finalCandidates.length > 0) {
       logger.debug(`${groupType} 排序後的候選清單 (前3名):`);
       finalCandidates.slice(0, 3).forEach((c, idx) => {
-        const statusLabel = c.isFullscreen ? ' [全螢幕]' : (c.hasCompleteOverlap ? ' [重疊✓]' : '');
+        const statusLabel = c.isFullscreen
+          ? ' [全螢幕]'
+          : c.hasCompleteOverlap
+            ? ' [重疊✓]'
+            : '';
         logger.debug(
           `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]${statusLabel}` +
-          `\n     加權分數:${c.score.toFixed(0)} = 可見×500(${(c.visibleRatio * 500).toFixed(0)}) - 垂直距離(${c.verticalDistance.toFixed(0)}) - Z懲罰(${c.zOrderPenalty})` +
-          `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
+            `\n     加權分數:${c.score.toFixed(0)} = 可見×500(${(c.visibleRatio * 500).toFixed(0)}) - 垂直距離(${c.verticalDistance.toFixed(0)}) - Z懲罰(${c.zOrderPenalty})` +
+            `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
       logger.debug(`\n→ 最終選擇: ${finalCandidates[0].window.title}`);
@@ -569,9 +721,13 @@ export class WindowManager {
 
     logger.debug(`\n=== 尋找左方視窗 ===`);
     logger.debug(`當前視窗: ${current.title}`);
-    logger.debug(`  位置: (${current.bounds.x}, ${current.bounds.y}) 大小: ${current.bounds.width}x${current.bounds.height}`);
+    logger.debug(
+      `  位置: (${current.bounds.x}, ${current.bounds.y}) 大小: ${current.bounds.width}x${current.bounds.height}`
+    );
     logger.debug(`  左邊 X = ${currentLeft}`);
-    logger.debug(`  Y 範圍: ${current.bounds.y} ~ ${current.bounds.y + current.bounds.height}`);
+    logger.debug(
+      `  Y 範圍: ${current.bounds.y} ~ ${current.bounds.y + current.bounds.height}`
+    );
 
     // 先記錄所有視窗的過濾情況
     windows.forEach((win) => {
@@ -579,40 +735,53 @@ export class WindowManager {
       const hasOverlap = this.hasVerticalOverlap(current.bounds, win.bounds);
       const xCondition = win.bounds.x < currentLeft;
       const passFilter = xCondition && hasOverlap;
-      
+
       logger.debug(
         `\n檢查: ${win.title} [Z:${win.zIndex ?? 'N/A'}]` +
-        `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
-        `\n  條件1 [左邊X]: ${win.bounds.x} < ${currentLeft} ? ${xCondition ? '✓ 是' : '✗ 否'}` +
-        `\n  條件2 [Y重疊]: 當前[${current.bounds.y}~${current.bounds.y + current.bounds.height}] vs 目標[${win.bounds.y}~${winBottom}] ? ${hasOverlap ? '✓ 有重疊' : '✗ 無重疊'}` +
-        `\n  → 結果: ${passFilter ? '✓✓ 符合條件' : '✗✗ 不符合'}`
+          `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
+          `\n  條件1 [左邊X]: ${win.bounds.x} < ${currentLeft} ? ${xCondition ? '✓ 是' : '✗ 否'}` +
+          `\n  條件2 [Y重疊]: 當前[${current.bounds.y}~${current.bounds.y + current.bounds.height}] vs 目標[${win.bounds.y}~${winBottom}] ? ${hasOverlap ? '✓ 有重疊' : '✗ 無重疊'}` +
+          `\n  → 結果: ${passFilter ? '✓✓ 符合條件' : '✗✗ 不符合'}`
       );
     });
 
     const candidates = windows
       .filter((win) => {
-        return win.bounds.x < currentLeft && this.hasVerticalOverlap(current.bounds, win.bounds);
+        return (
+          win.bounds.x < currentLeft &&
+          this.hasVerticalOverlap(current.bounds, win.bounds)
+        );
       })
       .map((win) => {
         const winRight = win.bounds.x + win.bounds.width;
         // 修正距離計算：有重疊時距離為0，優先比較可見面積
         const horizontalDistance = Math.max(0, currentLeft - winRight);
-        
+
         // Z-order 懲罰：數字越大（越下層）懲罰越多
         const zOrderPenalty = (win.zIndex ?? 0) * 50;
-        
+
         // 可見面積比例：計算視窗在左方的可見面積比例
-        const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'left');
-        
+        const visibleRatio = this.calculateVisibleAreaRatio(
+          current.bounds,
+          win.bounds,
+          'left'
+        );
+
         // 檢查是否與當前視窗有重疊（X和Y都有重疊）
-        const hasCompleteOverlap = this.hasCompleteOverlap(current.bounds, win.bounds);
-        
+        const hasCompleteOverlap = this.hasCompleteOverlap(
+          current.bounds,
+          win.bounds
+        );
+
         // 檢查是否為全螢幕包含視窗
-        const isFullscreen = this.isFullscreenContaining(current.bounds, win.bounds);
-        
+        const isFullscreen = this.isFullscreenContaining(
+          current.bounds,
+          win.bounds
+        );
+
         // 加權分數：可見面積加成 - 距離懲罰 - Z-order懲罰（分數越高越優先）
         const score = visibleRatio * 500 - horizontalDistance - zOrderPenalty;
-        
+
         return {
           window: win,
           score,
@@ -625,35 +794,49 @@ export class WindowManager {
       });
 
     // 分成三組：有重疊的 > 沒重疊的 > 全螢幕包含的
-    const overlappingNormalCandidates = candidates.filter(c => c.hasCompleteOverlap && !c.isFullscreen);
-    const nonOverlappingNormalCandidates = candidates.filter(c => !c.hasCompleteOverlap && !c.isFullscreen);
-    const fullscreenCandidates = candidates.filter(c => c.isFullscreen);
+    const overlappingNormalCandidates = candidates.filter(
+      (c) => c.hasCompleteOverlap && !c.isFullscreen
+    );
+    const nonOverlappingNormalCandidates = candidates.filter(
+      (c) => !c.hasCompleteOverlap && !c.isFullscreen
+    );
+    const fullscreenCandidates = candidates.filter((c) => c.isFullscreen);
 
-    logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個 (重疊:${overlappingNormalCandidates.length}, 不重疊:${nonOverlappingNormalCandidates.length}, 全螢幕:${fullscreenCandidates.length})`);
-    
+    logger.debug(
+      `\n符合條件的候選視窗: ${candidates.length} 個 (重疊:${overlappingNormalCandidates.length}, 不重疊:${nonOverlappingNormalCandidates.length}, 全螢幕:${fullscreenCandidates.length})`
+    );
+
     // 優先處理有重疊的 > 無重疊的 > 全螢幕的（分數由高到低排序）
     let finalCandidates: typeof candidates = [];
     let groupType = '';
-    
+
     if (overlappingNormalCandidates.length > 0) {
-      finalCandidates = overlappingNormalCandidates.sort((a, b) => b.score - a.score);
+      finalCandidates = overlappingNormalCandidates.sort(
+        (a, b) => b.score - a.score
+      );
       groupType = '【重疊組】';
     } else if (nonOverlappingNormalCandidates.length > 0) {
-      finalCandidates = nonOverlappingNormalCandidates.sort((a, b) => b.score - a.score);
+      finalCandidates = nonOverlappingNormalCandidates.sort(
+        (a, b) => b.score - a.score
+      );
       groupType = '【不重疊組】';
     } else if (fullscreenCandidates.length > 0) {
       finalCandidates = fullscreenCandidates.sort((a, b) => b.score - a.score);
       groupType = '【全螢幕組】';
     }
-    
+
     if (finalCandidates.length > 0) {
       logger.debug(`${groupType} 排序後的候選清單 (前3名):`);
       finalCandidates.slice(0, 3).forEach((c, idx) => {
-        const statusLabel = c.isFullscreen ? ' [全螢幕]' : (c.hasCompleteOverlap ? ' [重疊✓]' : '');
+        const statusLabel = c.isFullscreen
+          ? ' [全螢幕]'
+          : c.hasCompleteOverlap
+            ? ' [重疊✓]'
+            : '';
         logger.debug(
           `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]${statusLabel}` +
-          `\n     加權分數:${c.score.toFixed(0)} = 可見×500(${(c.visibleRatio * 500).toFixed(0)}) - 水平距離(${c.horizontalDistance.toFixed(0)}) - Z懲罰(${c.zOrderPenalty})` +
-          `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
+            `\n     加權分數:${c.score.toFixed(0)} = 可見×500(${(c.visibleRatio * 500).toFixed(0)}) - 水平距離(${c.horizontalDistance.toFixed(0)}) - Z懲罰(${c.zOrderPenalty})` +
+            `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
       logger.debug(`\n→ 最終選擇: ${finalCandidates[0].window.title}`);
@@ -674,9 +857,13 @@ export class WindowManager {
 
     logger.debug(`\n=== 尋找右方視窗 ===`);
     logger.debug(`當前視窗: ${current.title}`);
-    logger.debug(`  位置: (${current.bounds.x}, ${current.bounds.y}) 大小: ${current.bounds.width}x${current.bounds.height}`);
+    logger.debug(
+      `  位置: (${current.bounds.x}, ${current.bounds.y}) 大小: ${current.bounds.width}x${current.bounds.height}`
+    );
     logger.debug(`  右邊 X = ${currentRight}`);
-    logger.debug(`  Y 範圍: ${current.bounds.y} ~ ${current.bounds.y + current.bounds.height}`);
+    logger.debug(
+      `  Y 範圍: ${current.bounds.y} ~ ${current.bounds.y + current.bounds.height}`
+    );
 
     // 先記錄所有視窗的過濾情況
     windows.forEach((win) => {
@@ -685,40 +872,53 @@ export class WindowManager {
       const hasOverlap = this.hasVerticalOverlap(current.bounds, win.bounds);
       const xCondition = winRight > currentRight;
       const passFilter = xCondition && hasOverlap;
-      
+
       logger.debug(
         `\n檢查: ${win.title} [Z:${win.zIndex ?? 'N/A'}]` +
-        `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
-        `\n  條件1 [右邊X]: ${winRight} > ${currentRight} ? ${xCondition ? '✓ 是' : '✗ 否'}` +
-        `\n  條件2 [Y重疊]: 當前[${current.bounds.y}~${current.bounds.y + current.bounds.height}] vs 目標[${win.bounds.y}~${winBottom}] ? ${hasOverlap ? '✓ 有重疊' : '✗ 無重疊'}` +
-        `\n  → 結果: ${passFilter ? '✓✓ 符合條件' : '✗✗ 不符合'}`
+          `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
+          `\n  條件1 [右邊X]: ${winRight} > ${currentRight} ? ${xCondition ? '✓ 是' : '✗ 否'}` +
+          `\n  條件2 [Y重疊]: 當前[${current.bounds.y}~${current.bounds.y + current.bounds.height}] vs 目標[${win.bounds.y}~${winBottom}] ? ${hasOverlap ? '✓ 有重疊' : '✗ 無重疊'}` +
+          `\n  → 結果: ${passFilter ? '✓✓ 符合條件' : '✗✗ 不符合'}`
       );
     });
 
     const candidates = windows
       .filter((win) => {
         const winRight = win.bounds.x + win.bounds.width;
-        return winRight > currentRight && this.hasVerticalOverlap(current.bounds, win.bounds);
+        return (
+          winRight > currentRight &&
+          this.hasVerticalOverlap(current.bounds, win.bounds)
+        );
       })
       .map((win) => {
         // 修正距離計算：有重疊時距離為0，優先比較可見面積
         const horizontalDistance = Math.max(0, win.bounds.x - currentRight);
-        
+
         // Z-order 懲罰：數字越大（越下層）懲罰越多
         const zOrderPenalty = (win.zIndex ?? 0) * 50;
-        
+
         // 可見面積比例：計算視窗在右方的可見面積比例
-        const visibleRatio = this.calculateVisibleAreaRatio(current.bounds, win.bounds, 'right');
-        
+        const visibleRatio = this.calculateVisibleAreaRatio(
+          current.bounds,
+          win.bounds,
+          'right'
+        );
+
         // 檢查是否與當前視窗有重疊（X和Y都有重疊）
-        const hasCompleteOverlap = this.hasCompleteOverlap(current.bounds, win.bounds);
-        
+        const hasCompleteOverlap = this.hasCompleteOverlap(
+          current.bounds,
+          win.bounds
+        );
+
         // 檢查是否為全螢幕包含視窗
-        const isFullscreen = this.isFullscreenContaining(current.bounds, win.bounds);
-        
+        const isFullscreen = this.isFullscreenContaining(
+          current.bounds,
+          win.bounds
+        );
+
         // 加權分數：可見面積加成 - 距離懲罰 - Z-order懲罰（分數越高越優先）
         const score = visibleRatio * 500 - horizontalDistance - zOrderPenalty;
-        
+
         return {
           window: win,
           score,
@@ -731,35 +931,49 @@ export class WindowManager {
       });
 
     // 分成三組：有重疊的 > 沒重疊的 > 全螢幕包含的
-    const overlappingNormalCandidates = candidates.filter(c => c.hasCompleteOverlap && !c.isFullscreen);
-    const nonOverlappingNormalCandidates = candidates.filter(c => !c.hasCompleteOverlap && !c.isFullscreen);
-    const fullscreenCandidates = candidates.filter(c => c.isFullscreen);
+    const overlappingNormalCandidates = candidates.filter(
+      (c) => c.hasCompleteOverlap && !c.isFullscreen
+    );
+    const nonOverlappingNormalCandidates = candidates.filter(
+      (c) => !c.hasCompleteOverlap && !c.isFullscreen
+    );
+    const fullscreenCandidates = candidates.filter((c) => c.isFullscreen);
 
-    logger.debug(`\n符合條件的候選視窗: ${candidates.length} 個 (重疊:${overlappingNormalCandidates.length}, 不重疊:${nonOverlappingNormalCandidates.length}, 全螢幕:${fullscreenCandidates.length})`);
-    
+    logger.debug(
+      `\n符合條件的候選視窗: ${candidates.length} 個 (重疊:${overlappingNormalCandidates.length}, 不重疊:${nonOverlappingNormalCandidates.length}, 全螢幕:${fullscreenCandidates.length})`
+    );
+
     // 優先處理有重疊的 > 無重疊的 > 全螢幕的（分數由高到低排序）
     let finalCandidates: typeof candidates = [];
     let groupType = '';
-    
+
     if (overlappingNormalCandidates.length > 0) {
-      finalCandidates = overlappingNormalCandidates.sort((a, b) => b.score - a.score);
+      finalCandidates = overlappingNormalCandidates.sort(
+        (a, b) => b.score - a.score
+      );
       groupType = '【重疊組】';
     } else if (nonOverlappingNormalCandidates.length > 0) {
-      finalCandidates = nonOverlappingNormalCandidates.sort((a, b) => b.score - a.score);
+      finalCandidates = nonOverlappingNormalCandidates.sort(
+        (a, b) => b.score - a.score
+      );
       groupType = '【不重疊組】';
     } else if (fullscreenCandidates.length > 0) {
       finalCandidates = fullscreenCandidates.sort((a, b) => b.score - a.score);
       groupType = '【全螢幕組】';
     }
-    
+
     if (finalCandidates.length > 0) {
       logger.debug(`${groupType} 排序後的候選清單 (前3名):`);
       finalCandidates.slice(0, 3).forEach((c, idx) => {
-        const statusLabel = c.isFullscreen ? ' [全螢幕]' : (c.hasCompleteOverlap ? ' [重疊✓]' : '');
+        const statusLabel = c.isFullscreen
+          ? ' [全螢幕]'
+          : c.hasCompleteOverlap
+            ? ' [重疊✓]'
+            : '';
         logger.debug(
           `  ${idx + 1}. ${c.window.title} [Z:${c.window.zIndex}]${statusLabel}` +
-          `\n     加權分數:${c.score.toFixed(0)} = 可見×500(${(c.visibleRatio * 500).toFixed(0)}) - 水平距離(${c.horizontalDistance.toFixed(0)}) - Z懲罰(${c.zOrderPenalty})` +
-          `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
+            `\n     加權分數:${c.score.toFixed(0)} = 可見×500(${(c.visibleRatio * 500).toFixed(0)}) - 水平距離(${c.horizontalDistance.toFixed(0)}) - Z懲罰(${c.zOrderPenalty})` +
+            `\n     可見面積比例: ${(c.visibleRatio * 100).toFixed(1)}%`
         );
       });
       logger.debug(`\n→ 最終選擇: ${finalCandidates[0].window.title}`);
@@ -775,7 +989,10 @@ export class WindowManager {
    * 檢查兩個視窗是否完全重疊（X軸和Y軸都有重疊）
    */
   private hasCompleteOverlap(win1: WindowBounds, win2: WindowBounds): boolean {
-    return this.hasHorizontalOverlap(win1, win2) && this.hasVerticalOverlap(win1, win2);
+    return (
+      this.hasHorizontalOverlap(win1, win2) &&
+      this.hasVerticalOverlap(win1, win2)
+    );
   }
 
   /**
@@ -788,53 +1005,63 @@ export class WindowManager {
     logger.debug(`\n=== 後備搜尋：從上緣往下找重疊視窗 ===`);
     logger.debug(`當前視窗: ${current.title}`);
     logger.debug(`  Y 座標: ${current.bounds.y}`);
-    logger.debug(`  搜尋條件: 與當前視窗完全重疊 且 Y > ${current.bounds.y}（在下方）`);
-    
+    logger.debug(
+      `  搜尋條件: 與當前視窗完全重疊 且 Y > ${current.bounds.y}（在下方）`
+    );
+
     // 先檢查所有視窗
     windows.forEach((win) => {
       const hasXOverlap = this.hasHorizontalOverlap(current.bounds, win.bounds);
       const hasYOverlap = this.hasVerticalOverlap(current.bounds, win.bounds);
       const hasComplete = hasXOverlap && hasYOverlap;
       const yCondition = win.bounds.y > current.bounds.y;
-      
+
       logger.debug(
         `\n檢查: ${win.title}` +
-        `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
-        `\n  X重疊: ${hasXOverlap ? '✓' : '✗'}` +
-        `\n  Y重疊: ${hasYOverlap ? '✓' : '✗'}` +
-        `\n  完全重疊: ${hasComplete ? '✓' : '✗'}` +
-        `\n  Y座標條件 (${win.bounds.y} > ${current.bounds.y}): ${yCondition ? '✓' : '✗'}` +
-        `\n  → ${hasComplete && yCondition ? '✓✓ 符合' : '✗✗ 不符合'}`
+          `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
+          `\n  X重疊: ${hasXOverlap ? '✓' : '✗'}` +
+          `\n  Y重疊: ${hasYOverlap ? '✓' : '✗'}` +
+          `\n  完全重疊: ${hasComplete ? '✓' : '✗'}` +
+          `\n  Y座標條件 (${win.bounds.y} > ${current.bounds.y}): ${yCondition ? '✓' : '✗'}` +
+          `\n  → ${hasComplete && yCondition ? '✓✓ 符合' : '✗✗ 不符合'}`
       );
     });
-    
+
     // 先找一般視窗，再找全螢幕視窗
     const normalCandidates = windows
       .filter((win) => {
-        return this.hasCompleteOverlap(current.bounds, win.bounds) && 
-               !this.isFullscreenContaining(current.bounds, win.bounds);
+        return (
+          this.hasCompleteOverlap(current.bounds, win.bounds) &&
+          !this.isFullscreenContaining(current.bounds, win.bounds)
+        );
       })
       .filter((win) => win.bounds.y > current.bounds.y)
-      .sort((a, b) => a.bounds.y - b.bounds.y);  // 升序，選最小的Y（最接近上緣）
+      .sort((a, b) => a.bounds.y - b.bounds.y); // 升序，選最小的Y（最接近上緣）
 
     if (normalCandidates.length > 0) {
       logger.debug(`\n找到 ${normalCandidates.length} 個一般視窗候選`);
-      logger.debug(`選擇最接近的: ${normalCandidates[0].title} (Y: ${normalCandidates[0].bounds.y})`);
+      logger.debug(
+        `選擇最接近的: ${normalCandidates[0].title} (Y: ${normalCandidates[0].bounds.y})`
+      );
       return normalCandidates[0];
     }
 
     // 如果沒有一般視窗，才考慮全螢幕視窗
     const fullscreenCandidates = windows
       .filter((win) => {
-        return this.hasCompleteOverlap(current.bounds, win.bounds) && 
-               this.isFullscreenContaining(current.bounds, win.bounds);
+        return (
+          this.hasCompleteOverlap(current.bounds, win.bounds) &&
+          this.isFullscreenContaining(current.bounds, win.bounds)
+        );
       })
       .filter((win) => win.bounds.y > current.bounds.y)
       .sort((a, b) => a.bounds.y - b.bounds.y);
 
     if (fullscreenCandidates.length > 0) {
       logger.debug(`\n找到 ${fullscreenCandidates.length} 個全螢幕視窗候選`);
-      logger.debug(`選擇最接近的: ${fullscreenCandidates[0].title} (Y: ${fullscreenCandidates[0].bounds.y}) [全螢幕]`);
+      logger.debug(
+        `選擇最接近的: ${fullscreenCandidates[0].title} (Y: ${fullscreenCandidates[0].bounds.y}) [全螢幕]`
+      );
       return fullscreenCandidates[0];
     }
 
@@ -853,35 +1080,45 @@ export class WindowManager {
     logger.debug(`\n=== 後備搜尋：從下緣往上找重疊視窗 ===`);
     logger.debug(`當前視窗: ${current.title}`);
     logger.debug(`  下緣 Y 座標: ${currentBottom}`);
-    logger.debug(`  搜尋條件: 與當前視窗完全重疊 且 Y < ${currentBottom}（在上方）`);
-    
+    logger.debug(
+      `  搜尋條件: 與當前視窗完全重疊 且 Y < ${currentBottom}（在上方）`
+    );
+
     // 先找一般視窗，再找全螢幕視窗
     const normalCandidates = windows
       .filter((win) => {
-        return this.hasCompleteOverlap(current.bounds, win.bounds) && 
-               !this.isFullscreenContaining(current.bounds, win.bounds);
+        return (
+          this.hasCompleteOverlap(current.bounds, win.bounds) &&
+          !this.isFullscreenContaining(current.bounds, win.bounds)
+        );
       })
       .filter((win) => win.bounds.y < currentBottom)
-      .sort((a, b) => b.bounds.y - a.bounds.y);  // 降序，選最大的Y（最接近下緣）
+      .sort((a, b) => b.bounds.y - a.bounds.y); // 降序，選最大的Y（最接近下緣）
 
     if (normalCandidates.length > 0) {
       logger.debug(`找到 ${normalCandidates.length} 個一般視窗候選`);
-      logger.debug(`選擇最接近的: ${normalCandidates[0].title} (Y: ${normalCandidates[0].bounds.y})`);
+      logger.debug(
+        `選擇最接近的: ${normalCandidates[0].title} (Y: ${normalCandidates[0].bounds.y})`
+      );
       return normalCandidates[0];
     }
 
     // 如果沒有一般視窗，才考慮全螢幕視窗
     const fullscreenCandidates = windows
       .filter((win) => {
-        return this.hasCompleteOverlap(current.bounds, win.bounds) && 
-               this.isFullscreenContaining(current.bounds, win.bounds);
+        return (
+          this.hasCompleteOverlap(current.bounds, win.bounds) &&
+          this.isFullscreenContaining(current.bounds, win.bounds)
+        );
       })
       .filter((win) => win.bounds.y < currentBottom)
       .sort((a, b) => b.bounds.y - a.bounds.y);
 
     if (fullscreenCandidates.length > 0) {
       logger.debug(`找到 ${fullscreenCandidates.length} 個全螢幕視窗候選`);
-      logger.debug(`選擇最接近的: ${fullscreenCandidates[0].title} (Y: ${fullscreenCandidates[0].bounds.y}) [全螢幕]`);
+      logger.debug(
+        `選擇最接近的: ${fullscreenCandidates[0].title} (Y: ${fullscreenCandidates[0].bounds.y}) [全螢幕]`
+      );
       return fullscreenCandidates[0];
     }
 
@@ -899,35 +1136,45 @@ export class WindowManager {
     logger.debug(`\n=== 後備搜尋：從左緣往右找重疊視窗 ===`);
     logger.debug(`當前視窗: ${current.title}`);
     logger.debug(`  X 座標: ${current.bounds.x}`);
-    logger.debug(`  搜尋條件: 與當前視窗完全重疊 且 X > ${current.bounds.x}（在右方）`);
-    
+    logger.debug(
+      `  搜尋條件: 與當前視窗完全重疊 且 X > ${current.bounds.x}（在右方）`
+    );
+
     // 先找一般視窗，再找全螢幕視窗
     const normalCandidates = windows
       .filter((win) => {
-        return this.hasCompleteOverlap(current.bounds, win.bounds) && 
-               !this.isFullscreenContaining(current.bounds, win.bounds);
+        return (
+          this.hasCompleteOverlap(current.bounds, win.bounds) &&
+          !this.isFullscreenContaining(current.bounds, win.bounds)
+        );
       })
       .filter((win) => win.bounds.x > current.bounds.x)
-      .sort((a, b) => a.bounds.x - b.bounds.x);  // 升序，選最小的X（最接近左緣）
+      .sort((a, b) => a.bounds.x - b.bounds.x); // 升序，選最小的X（最接近左緣）
 
     if (normalCandidates.length > 0) {
       logger.debug(`找到 ${normalCandidates.length} 個一般視窗候選`);
-      logger.debug(`選擇最接近的: ${normalCandidates[0].title} (X: ${normalCandidates[0].bounds.x})`);
+      logger.debug(
+        `選擇最接近的: ${normalCandidates[0].title} (X: ${normalCandidates[0].bounds.x})`
+      );
       return normalCandidates[0];
     }
 
     // 如果沒有一般視窗，才考慮全螢幕視窗
     const fullscreenCandidates = windows
       .filter((win) => {
-        return this.hasCompleteOverlap(current.bounds, win.bounds) && 
-               this.isFullscreenContaining(current.bounds, win.bounds);
+        return (
+          this.hasCompleteOverlap(current.bounds, win.bounds) &&
+          this.isFullscreenContaining(current.bounds, win.bounds)
+        );
       })
       .filter((win) => win.bounds.x > current.bounds.x)
       .sort((a, b) => a.bounds.x - b.bounds.x);
 
     if (fullscreenCandidates.length > 0) {
       logger.debug(`找到 ${fullscreenCandidates.length} 個全螢幕視窗候選`);
-      logger.debug(`選擇最接近的: ${fullscreenCandidates[0].title} (X: ${fullscreenCandidates[0].bounds.x}) [全螢幕]`);
+      logger.debug(
+        `選擇最接近的: ${fullscreenCandidates[0].title} (X: ${fullscreenCandidates[0].bounds.x}) [全螢幕]`
+      );
       return fullscreenCandidates[0];
     }
 
@@ -946,35 +1193,45 @@ export class WindowManager {
     logger.debug(`\n=== 後備搜尋：從右緣往左找重疊視窗 ===`);
     logger.debug(`當前視窗: ${current.title}`);
     logger.debug(`  右緣 X 座標: ${currentRight}`);
-    logger.debug(`  搜尋條件: 與當前視窗完全重疊 且 X < ${currentRight}（在左方）`);
-    
+    logger.debug(
+      `  搜尋條件: 與當前視窗完全重疊 且 X < ${currentRight}（在左方）`
+    );
+
     // 先找一般視窗，再找全螢幕視窗
     const normalCandidates = windows
       .filter((win) => {
-        return this.hasCompleteOverlap(current.bounds, win.bounds) && 
-               !this.isFullscreenContaining(current.bounds, win.bounds);
+        return (
+          this.hasCompleteOverlap(current.bounds, win.bounds) &&
+          !this.isFullscreenContaining(current.bounds, win.bounds)
+        );
       })
       .filter((win) => win.bounds.x < currentRight)
-      .sort((a, b) => b.bounds.x - a.bounds.x);  // 降序，選最大的X（最接近右緣）
+      .sort((a, b) => b.bounds.x - a.bounds.x); // 降序，選最大的X（最接近右緣）
 
     if (normalCandidates.length > 0) {
       logger.debug(`找到 ${normalCandidates.length} 個一般視窗候選`);
-      logger.debug(`選擇最接近的: ${normalCandidates[0].title} (X: ${normalCandidates[0].bounds.x})`);
+      logger.debug(
+        `選擇最接近的: ${normalCandidates[0].title} (X: ${normalCandidates[0].bounds.x})`
+      );
       return normalCandidates[0];
     }
 
     // 如果沒有一般視窗，才考慮全螢幕視窗
     const fullscreenCandidates = windows
       .filter((win) => {
-        return this.hasCompleteOverlap(current.bounds, win.bounds) && 
-               this.isFullscreenContaining(current.bounds, win.bounds);
+        return (
+          this.hasCompleteOverlap(current.bounds, win.bounds) &&
+          this.isFullscreenContaining(current.bounds, win.bounds)
+        );
       })
       .filter((win) => win.bounds.x < currentRight)
       .sort((a, b) => b.bounds.x - a.bounds.x);
 
     if (fullscreenCandidates.length > 0) {
       logger.debug(`找到 ${fullscreenCandidates.length} 個全螢幕視窗候選`);
-      logger.debug(`選擇最接近的: ${fullscreenCandidates[0].title} (X: ${fullscreenCandidates[0].bounds.x}) [全螢幕]`);
+      logger.debug(
+        `選擇最接近的: ${fullscreenCandidates[0].title} (X: ${fullscreenCandidates[0].bounds.x}) [全螢幕]`
+      );
       return fullscreenCandidates[0];
     }
 
@@ -990,7 +1247,10 @@ export class WindowManager {
   }
 
   // 檢查兩個視窗在水平方向上是否有重疊
-  private hasHorizontalOverlap(win1: WindowBounds, win2: WindowBounds): boolean {
+  private hasHorizontalOverlap(
+    win1: WindowBounds,
+    win2: WindowBounds
+  ): boolean {
     const win1Right = win1.x + win1.width;
     const win2Right = win2.x + win2.width;
     return !(win1Right <= win2.x || win2Right <= win1.x);
@@ -1007,14 +1267,17 @@ export class WindowManager {
    * 檢查目標視窗是否包含當前視窗且佔螢幕90%以上
    * 用於降低全螢幕或接近全螢幕的視窗優先度
    */
-  private isFullscreenContaining(current: WindowBounds, target: WindowBounds): boolean {
+  private isFullscreenContaining(
+    current: WindowBounds,
+    target: WindowBounds
+  ): boolean {
     // 檢查目標視窗是否完全包含當前視窗
-    const contains = 
+    const contains =
       target.x <= current.x &&
       target.y <= current.y &&
-      (target.x + target.width) >= (current.x + current.width) &&
-      (target.y + target.height) >= (current.y + current.height);
-    
+      target.x + target.width >= current.x + current.width &&
+      target.y + target.height >= current.y + current.height;
+
     if (!contains) {
       return false;
     }
@@ -1025,12 +1288,12 @@ export class WindowManager {
       if (!monitor) {
         return false;
       }
-      
+
       const screenBounds = monitor.getBounds();
       const screenArea = screenBounds.width * screenBounds.height;
       const targetArea = target.width * target.height;
       const ratio = targetArea / screenArea;
-      
+
       // 如果目標視窗佔螢幕90%以上，視為全螢幕
       return ratio >= 0.9;
     } catch (error) {
@@ -1045,21 +1308,25 @@ export class WindowManager {
    * @param allWindows 所有視窗列表（已按 z-index 排序，0 是最上層）
    * @returns 可見面積比例 (0-1)
    */
-  private calculateActualVisibleArea(target: WindowInfo, allWindows: WindowInfo[]): number {
+  private calculateActualVisibleArea(
+    target: WindowInfo,
+    allWindows: WindowInfo[]
+  ): number {
     const targetArea = target.bounds.width * target.bounds.height;
     if (targetArea === 0) return 0;
 
     // 找出所有在目標視窗上方的視窗（z-index 更小）
-    const windowsAbove = allWindows.filter(win => 
-      win.zIndex !== undefined && 
-      target.zIndex !== undefined && 
-      win.zIndex < target.zIndex
+    const windowsAbove = allWindows.filter(
+      (win) =>
+        win.zIndex !== undefined &&
+        target.zIndex !== undefined &&
+        win.zIndex < target.zIndex
     );
 
     logger.debug(
       `\n[可見性計算] ${target.title} (Z:${target.zIndex})` +
-      `\n  面積: ${targetArea.toFixed(0)}px²` +
-      `\n  上層視窗數量: ${windowsAbove.length}`
+        `\n  面積: ${targetArea.toFixed(0)}px²` +
+        `\n  上層視窗數量: ${windowsAbove.length}`
     );
 
     // 如果沒有上層視窗，完全可見
@@ -1068,11 +1335,45 @@ export class WindowManager {
       return 1.0;
     }
 
-    // 計算被遮擋的面積（簡化版：只計算與上層視窗的重疊部分）
-    let coveredArea = 0;
-    
+    // 使用網格採樣法估算可見面積（更準確）
+    // 將目標視窗分成 20x20 的網格，檢查每個網格點是否被遮擋
+    const gridSize = 20;
+    const cellWidth = target.bounds.width / gridSize;
+    const cellHeight = target.bounds.height / gridSize;
+
+    let visibleCells = 0;
+    const totalCells = gridSize * gridSize;
+
+    for (let i = 0; i < gridSize; i++) {
+      for (let j = 0; j < gridSize; j++) {
+        // 計算網格中心點座標
+        const pointX = target.bounds.x + (i + 0.5) * cellWidth;
+        const pointY = target.bounds.y + (j + 0.5) * cellHeight;
+
+        // 檢查這個點是否被任何上層視窗遮擋
+        let isCovered = false;
+        for (const upperWin of windowsAbove) {
+          if (
+            pointX >= upperWin.bounds.x &&
+            pointX < upperWin.bounds.x + upperWin.bounds.width &&
+            pointY >= upperWin.bounds.y &&
+            pointY < upperWin.bounds.y + upperWin.bounds.height
+          ) {
+            isCovered = true;
+            break;
+          }
+        }
+
+        if (!isCovered) {
+          visibleCells++;
+        }
+      }
+    }
+
+    const visibleRatio = visibleCells / totalCells;
+
+    // 計算每個上層視窗的單獨遮擋（用於日誌）
     for (const upperWin of windowsAbove) {
-      // 計算重疊區域
       const overlapX1 = Math.max(target.bounds.x, upperWin.bounds.x);
       const overlapY1 = Math.max(target.bounds.y, upperWin.bounds.y);
       const overlapX2 = Math.min(
@@ -1084,27 +1385,22 @@ export class WindowManager {
         upperWin.bounds.y + upperWin.bounds.height
       );
 
-      // 如果有重疊
       if (overlapX1 < overlapX2 && overlapY1 < overlapY2) {
         const overlapArea = (overlapX2 - overlapX1) * (overlapY2 - overlapY1);
-        coveredArea += overlapArea;
-        
+
         logger.debug(
           `  上層視窗: ${upperWin.title} (Z:${upperWin.zIndex})` +
-          `\n    遮擋面積: ${overlapArea.toFixed(0)}px² (${((overlapArea / targetArea) * 100).toFixed(1)}%)`
+            `\n    遮擋區域: (${overlapX1.toFixed(0)}, ${overlapY1.toFixed(0)}) ~ (${overlapX2.toFixed(0)}, ${overlapY2.toFixed(0)})` +
+            `\n    遮擋面積: ${overlapArea.toFixed(0)}px² (${((overlapArea / targetArea) * 100).toFixed(1)}%)`
         );
       }
     }
 
-    // 簡化處理：不考慮重疊區域的交集，可能會高估遮擋面積
-    const visibleArea = Math.max(0, targetArea - coveredArea);
-    const visibleRatio = visibleArea / targetArea;
-    
     logger.debug(
-      `  總遮擋面積: ${coveredArea.toFixed(0)}px²` +
-      `\n  → 可見比例: ${(visibleRatio * 100).toFixed(1)}%`
+      `  [網格採樣] 可見格子: ${visibleCells}/${totalCells}` +
+        `\n  → 可見比例: ${(visibleRatio * 100).toFixed(1)}%`
     );
-    
+
     return visibleRatio;
   }
 
@@ -1213,6 +1509,33 @@ export class WindowManager {
     y2: number
   ): number {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+  }
+
+  /**
+   * 輸出視窗的詳細資訊
+   */
+  private logWindowDetail(win: WindowInfo, label: string | null): void {
+    const x1 = win.bounds.x;
+    const y1 = win.bounds.y;
+    const x2 = x1 + win.bounds.width;
+    const y2 = y1 + win.bounds.height;
+    const area = win.bounds.width * win.bounds.height;
+
+    const labelPrefix = label ? `[${label}] ` : '';
+
+    logger.debug(
+      `  ${labelPrefix}名稱: ${win.title}` +
+        `\n  ID: ${win.id}` +
+        `\n  Z-index: ${win.zIndex ?? 'N/A'}` +
+        `\n  位置: (${x1}, ${y1})` +
+        `\n  大小: ${win.bounds.width} × ${win.bounds.height}` +
+        `\n  面積: ${area.toLocaleString()} px²` +
+        `\n  四個角座標:` +
+        `\n    左上: (${x1}, ${y1})` +
+        `\n    右上: (${x2}, ${y1})` +
+        `\n    左下: (${x1}, ${y2})` +
+        `\n    右下: (${x2}, ${y2})`
+    );
   }
 
   clearCache(): void {
