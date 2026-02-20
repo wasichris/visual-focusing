@@ -297,7 +297,9 @@ export class WindowManager {
         return null;
       }
 
-      logger.debug(`\n[查詢] 方向=${direction.toUpperCase()} 當前=${currentWindow.title} (${currentWindow.bounds.x},${currentWindow.bounds.y}) ${currentWindow.bounds.width}×${currentWindow.bounds.height}`);
+      logger.debug(
+        `\n[查詢] 方向=${direction.toUpperCase()} 當前=${currentWindow.title} (${currentWindow.bounds.x},${currentWindow.bounds.y}) ${currentWindow.bounds.width}×${currentWindow.bounds.height}`
+      );
 
       const allWindows = this.getAllWindows().filter((win) => {
         // 排除當前視窗（使用 ID 和位置雙重檢查）
@@ -318,7 +320,9 @@ export class WindowManager {
 
       logger.debug(`[候選視窗] 共 ${allWindows.length} 個:`);
       allWindows.forEach((win, idx) => {
-        logger.debug(`  ${idx + 1}. ${win.title} Z:${win.zIndex} (${win.bounds.x},${win.bounds.y}) ${win.bounds.width}×${win.bounds.height}`);
+        logger.debug(
+          `  ${idx + 1}. ${win.title} Z:${win.zIndex} (${win.bounds.x},${win.bounds.y}) ${win.bounds.width}×${win.bounds.height}`
+        );
       });
 
       logger.debug(`[可見性分析]`);
@@ -339,7 +343,9 @@ export class WindowManager {
         );
         const isVisible = visibleRatio > 0;
 
-        logger.debug(`  ${win.title}: ${(visibleRatio * 100).toFixed(1)}% ${isVisible ? '✓' : '✗完全被遮擋'}`);
+        logger.debug(
+          `  ${win.title}: ${(visibleRatio * 100).toFixed(1)}% ${isVisible ? '✓' : '✗完全被遮擋'}`
+        );
 
         if (isVisible) {
           visibleWindowsWithRatio.push({ window: win, visibleRatio });
@@ -354,7 +360,6 @@ export class WindowManager {
       }
 
       logger.debug(`[可見視窗] 共 ${visibleWindows.length} 個`);
-
 
       let targetWindow: WindowInfo | null = null;
 
