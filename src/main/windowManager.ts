@@ -297,15 +297,7 @@ export class WindowManager {
         return null;
       }
 
-      // ============================================================
-      // 階段 1: 顯示當前視窗資訊
-      // ============================================================
-      logger.debug('\n' + '='.repeat(40));
-      logger.debug(`視窗切換查詢開始 - 方向: ${direction.toUpperCase()}`);
-      logger.debug('='.repeat(40));
-
-      logger.debug('\n【當前視窗】');
-      this.logWindowDetail(currentWindow, '當前');
+      logger.debug(`\n[查詢] 方向=${direction.toUpperCase()} 當前=${currentWindow.title} (${currentWindow.bounds.x},${currentWindow.bounds.y}) ${currentWindow.bounds.width}×${currentWindow.bounds.height}`);
 
       const allWindows = this.getAllWindows().filter((win) => {
         // 排除當前視窗（使用 ID 和位置雙重檢查）
@@ -320,29 +312,16 @@ export class WindowManager {
       });
 
       if (allWindows.length === 0) {
-        logger.debug('\n沒有其他可切換的視窗');
-        logger.debug('='.repeat(40) + '\n');
+        logger.debug('無其他視窗');
         return null;
       }
 
-      // ============================================================
-      // 階段 2: 顯示所有候選視窗的基本資訊
-      // ============================================================
-      logger.debug('\n' + '-'.repeat(40));
-      logger.debug(`階段 1: 所有候選視窗資訊（共 ${allWindows.length} 個）`);
-      logger.debug('-'.repeat(40));
-
+      logger.debug(`[候選視窗] 共 ${allWindows.length} 個:`);
       allWindows.forEach((win, idx) => {
-        logger.debug(`\n[${idx + 1}] ${win.title}`);
-        this.logWindowDetail(win, null);
+        logger.debug(`  ${idx + 1}. ${win.title} Z:${win.zIndex} (${win.bounds.x},${win.bounds.y}) ${win.bounds.width}×${win.bounds.height}`);
       });
 
-      // ============================================================
-      // 階段 3: 計算並顯示可見性分析
-      // ============================================================
-      logger.debug('\n' + '-'.repeat(40));
-      logger.debug('階段 2: 可見性分析（根據 Z-index 計算實際露出區域）');
-      logger.debug('-'.repeat(40));
+      logger.debug(`[可見性分析]`);
 
       // 過濾出實際有露出的視窗（可見面積 > 0）
       // 注意：計算可見度時需要包含當前視窗，因為當前視窗可能遮擋其他視窗
@@ -360,11 +339,7 @@ export class WindowManager {
         );
         const isVisible = visibleRatio > 0;
 
-        logger.debug(
-          `\n${win.title} (Z:${win.zIndex})` +
-            `\n  可見比例: ${(visibleRatio * 100).toFixed(1)}%` +
-            `\n  結果: ${isVisible ? '✓ 可見，列入查詢範圍' : '✗ 完全被遮擋，排除'}`
-        );
+        logger.debug(`  ${win.title}: ${(visibleRatio * 100).toFixed(1)}% ${isVisible ? '✓' : '✗完全被遮擋'}`);
 
         if (isVisible) {
           visibleWindowsWithRatio.push({ window: win, visibleRatio });
@@ -374,34 +349,12 @@ export class WindowManager {
       const visibleWindows = visibleWindowsWithRatio.map((item) => item.window);
 
       if (visibleWindows.length === 0) {
-        logger.debug('\n' + '!'.repeat(40));
-        logger.debug('沒有實際可見的視窗');
-        logger.debug('!'.repeat(40) + '\n');
+        logger.debug('無可見視窗');
         return null;
       }
 
-      // ============================================================
-      // 階段 4: 顯示可見視窗名單
-      // ============================================================
-      logger.debug('\n' + '-'.repeat(40));
-      logger.debug(`階段 3: 可見視窗名單（共 ${visibleWindows.length} 個）`);
-      logger.debug('-'.repeat(40));
+      logger.debug(`[可見視窗] 共 ${visibleWindows.length} 個`);
 
-      visibleWindows.forEach((win, idx) => {
-        const ratio =
-          visibleWindowsWithRatio.find((item) => item.window.id === win.id)
-            ?.visibleRatio || 0;
-        logger.debug(
-          `  ${idx + 1}. ${win.title} (Z:${win.zIndex}) - 可見度: ${(ratio * 100).toFixed(1)}%`
-        );
-      });
-
-      // ============================================================
-      // 階段 5: 開始方向搜尋
-      // ============================================================
-      logger.debug('\n' + '-'.repeat(40));
-      logger.debug(`階段 4: 開始 ${direction.toUpperCase()} 方向搜尋`);
-      logger.debug('-'.repeat(40) + '\n');
 
       let targetWindow: WindowInfo | null = null;
 
@@ -1323,15 +1276,8 @@ export class WindowManager {
         win.zIndex < target.zIndex
     );
 
-    logger.debug(
-      `\n[可見性計算] ${target.title} (Z:${target.zIndex})` +
-        `\n  面積: ${targetArea.toFixed(0)}px²` +
-        `\n  上層視窗數量: ${windowsAbove.length}`
-    );
-
     // 如果沒有上層視窗，完全可見
     if (windowsAbove.length === 0) {
-      logger.debug(`  → 沒有上層視窗，完全可見 (100%)`);
       return 1.0;
     }
 
@@ -1371,36 +1317,6 @@ export class WindowManager {
     }
 
     const visibleRatio = visibleCells / totalCells;
-
-    // 計算每個上層視窗的單獨遮擋（用於日誌）
-    for (const upperWin of windowsAbove) {
-      const overlapX1 = Math.max(target.bounds.x, upperWin.bounds.x);
-      const overlapY1 = Math.max(target.bounds.y, upperWin.bounds.y);
-      const overlapX2 = Math.min(
-        target.bounds.x + target.bounds.width,
-        upperWin.bounds.x + upperWin.bounds.width
-      );
-      const overlapY2 = Math.min(
-        target.bounds.y + target.bounds.height,
-        upperWin.bounds.y + upperWin.bounds.height
-      );
-
-      if (overlapX1 < overlapX2 && overlapY1 < overlapY2) {
-        const overlapArea = (overlapX2 - overlapX1) * (overlapY2 - overlapY1);
-
-        logger.debug(
-          `  上層視窗: ${upperWin.title} (Z:${upperWin.zIndex})` +
-            `\n    遮擋區域: (${overlapX1.toFixed(0)}, ${overlapY1.toFixed(0)}) ~ (${overlapX2.toFixed(0)}, ${overlapY2.toFixed(0)})` +
-            `\n    遮擋面積: ${overlapArea.toFixed(0)}px² (${((overlapArea / targetArea) * 100).toFixed(1)}%)`
-        );
-      }
-    }
-
-    logger.debug(
-      `  [網格採樣] 可見格子: ${visibleCells}/${totalCells}` +
-        `\n  → 可見比例: ${(visibleRatio * 100).toFixed(1)}%`
-    );
-
     return visibleRatio;
   }
 
@@ -1509,33 +1425,6 @@ export class WindowManager {
     y2: number
   ): number {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-  }
-
-  /**
-   * 輸出視窗的詳細資訊
-   */
-  private logWindowDetail(win: WindowInfo, label: string | null): void {
-    const x1 = win.bounds.x;
-    const y1 = win.bounds.y;
-    const x2 = x1 + win.bounds.width;
-    const y2 = y1 + win.bounds.height;
-    const area = win.bounds.width * win.bounds.height;
-
-    const labelPrefix = label ? `[${label}] ` : '';
-
-    logger.debug(
-      `  ${labelPrefix}名稱: ${win.title}` +
-        `\n  ID: ${win.id}` +
-        `\n  Z-index: ${win.zIndex ?? 'N/A'}` +
-        `\n  位置: (${x1}, ${y1})` +
-        `\n  大小: ${win.bounds.width} × ${win.bounds.height}` +
-        `\n  面積: ${area.toLocaleString()} px²` +
-        `\n  四個角座標:` +
-        `\n    左上: (${x1}, ${y1})` +
-        `\n    右上: (${x2}, ${y1})` +
-        `\n    左下: (${x1}, ${y2})` +
-        `\n    右下: (${x2}, ${y2})`
-    );
   }
 
   clearCache(): void {
