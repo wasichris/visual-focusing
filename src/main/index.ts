@@ -10,6 +10,8 @@ import {
 import path from 'path';
 import Store from 'electron-store';
 import type { AppConfig, ShortcutConfig } from '../shared/types';
+
+app.setName('Visual Focusing');
 import { shortcutManager } from './shortcutManager';
 import { permissionsManager } from './permissions';
 import { windowManagerInstance } from './windowManager';
@@ -38,6 +40,7 @@ const store = new Store<AppConfig>({
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
+let isQuitting = false;
 
 function createTray() {
   const iconPath = path.join(__dirname, '../../../assets/icon.png');
@@ -63,6 +66,7 @@ function createTray() {
     {
       label: '結束',
       click: () => {
+        isQuitting = true;
         app.quit();
       },
     },
@@ -105,8 +109,10 @@ function createWindow() {
   }
 
   mainWindow.on('close', (event) => {
-    event.preventDefault();
-    mainWindow?.hide();
+    if (!isQuitting) {
+      event.preventDefault();
+      mainWindow?.hide();
+    }
   });
 
   // 將 console.log 轉發到 renderer 的 console
@@ -123,30 +129,38 @@ function setupConsoleForwarding() {
 
   console.log = (...args) => {
     originalLog(...args);
-    mainWindow?.webContents.executeJavaScript(
-      `console.log(${JSON.stringify(args.map(String).join(' '))})`
-    );
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.executeJavaScript(
+        `console.log(${JSON.stringify(args.map(String).join(' '))})`
+      );
+    }
   };
 
   console.warn = (...args) => {
     originalWarn(...args);
-    mainWindow?.webContents.executeJavaScript(
-      `console.warn(${JSON.stringify(args.map(String).join(' '))})`
-    );
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.executeJavaScript(
+        `console.warn(${JSON.stringify(args.map(String).join(' '))})`
+      );
+    }
   };
 
   console.error = (...args) => {
     originalError(...args);
-    mainWindow?.webContents.executeJavaScript(
-      `console.error(${JSON.stringify(args.map(String).join(' '))})`
-    );
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.executeJavaScript(
+        `console.error(${JSON.stringify(args.map(String).join(' '))})`
+      );
+    }
   };
 
   console.debug = (...args) => {
     originalDebug(...args);
-    mainWindow?.webContents.executeJavaScript(
-      `console.debug(${JSON.stringify(args.map(String).join(' '))})`
-    );
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.executeJavaScript(
+        `console.debug(${JSON.stringify(args.map(String).join(' '))})`
+      );
+    }
   };
 }
 
