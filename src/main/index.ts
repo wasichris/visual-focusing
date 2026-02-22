@@ -1,4 +1,10 @@
-import { app, BrowserWindow, ipcMain, Notification } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Notification,
+  nativeImage,
+} from 'electron';
 import path from 'path';
 import Store from 'electron-store';
 import type { AppConfig, ShortcutConfig } from '../shared/types';
@@ -182,6 +188,12 @@ async function initializeApp() {
 
 app.whenReady().then(() => {
   logger.info('Electron app 就緒');
+
+  if (process.platform === 'darwin') {
+    const iconPath = path.join(__dirname, '../../../assets/icon.png');
+    app.dock?.setIcon(nativeImage.createFromPath(iconPath));
+  }
+
   setupIpcHandlers();
   createWindow();
   initializeApp();
