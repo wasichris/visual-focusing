@@ -4,6 +4,8 @@ import {
   ipcMain,
   Notification,
   nativeImage,
+  Tray,
+  Menu,
 } from 'electron';
 import path from 'path';
 import Store from 'electron-store';
@@ -35,6 +37,51 @@ const store = new Store<AppConfig>({
 }) as StoreWithMethods<AppConfig>;
 
 let mainWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
+
+function createTray() {
+  const iconPath = path.join(__dirname, '../../../assets/icon.png');
+  const icon = nativeImage
+    .createFromPath(iconPath)
+    .resize({ width: 18, height: 18 });
+  tray = new Tray(icon);
+  tray.setToolTip('Visual Focusing');
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '開啟 Visual Focusing',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        } else {
+          createWindow();
+        }
+      },
+    },
+    { type: 'separator' },
+    {
+      label: '結束',
+      click: () => {
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
+  tray.on('click', () => {
+    if (mainWindow) {
+      if (mainWindow.isVisible()) {
+        mainWindow.hide();
+      } else {
+        mainWindow.show();
+        mainWindow.focus();
+      }
+    } else {
+      createWindow();
+    }
+  });
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -57,8 +104,9 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
+  mainWindow.on('close', (event) => {
+    event.preventDefault();
+    mainWindow?.hide();
   });
 
   // 將 console.log 轉發到 renderer 的 console
@@ -195,11 +243,15 @@ app.whenReady().then(() => {
   }
 
   setupIpcHandlers();
+  createTray();
   createWindow();
   initializeApp();
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    } else {
       createWindow();
     }
   });
