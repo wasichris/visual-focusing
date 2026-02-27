@@ -33,10 +33,10 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
     // 修飾鍵 - 修正 Option 鍵偵測
     if (e.metaKey) keys.push('CommandOrControl');
     if (e.ctrlKey && !e.metaKey) keys.push('Control');
-    if (e.altKey) keys.push('Alt');  // Option 鍵在 macOS 上對應 altKey
+    if (e.altKey) keys.push('Alt'); // Option 鍵在 macOS 上對應 altKey
     if (e.shiftKey) keys.push('Shift');
 
-    // 主鍵
+    // 主鍵 - 使用 e.code 來避免 macOS Option 鍵產生特殊字元（如 ∆）
     const mainKey = e.key;
     if (
       mainKey !== 'Meta' &&
@@ -53,12 +53,22 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
         ' ': 'Space',
       };
 
-      // 處理字母鍵，將小寫轉大寫
-      let finalKey = keyMap[mainKey] || mainKey;
-      if (finalKey.length === 1) {
-        finalKey = finalKey.toUpperCase();
+      let finalKey: string;
+      const code = e.code;
+
+      if (code.startsWith('Key')) {
+        // KeyA ~ KeyZ → A ~ Z
+        finalKey = code.slice(3).toUpperCase();
+      } else if (code.startsWith('Digit')) {
+        // Digit0 ~ Digit9 → 0 ~ 9
+        finalKey = code.slice(5);
+      } else {
+        finalKey = keyMap[mainKey] || mainKey;
+        if (finalKey.length === 1) {
+          finalKey = finalKey.toUpperCase();
+        }
       }
-      
+
       keys.push(finalKey);
     }
 
@@ -66,11 +76,12 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
 
     // 如果有完整的組合鍵（至少一個修飾鍵 + 一個主鍵），完成錄製
     // 檢查是否有主鍵（非修飾鍵）
-    const hasMainKey = mainKey !== 'Meta' &&
-                        mainKey !== 'Control' &&
-                        mainKey !== 'Alt' &&
-                        mainKey !== 'Shift';
-    
+    const hasMainKey =
+      mainKey !== 'Meta' &&
+      mainKey !== 'Control' &&
+      mainKey !== 'Alt' &&
+      mainKey !== 'Shift';
+
     if (hasMainKey && keys.length >= 2) {
       const shortcut = keys.join('+');
       onChange(shortcut);
