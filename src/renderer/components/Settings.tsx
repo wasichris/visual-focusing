@@ -51,6 +51,12 @@ function Settings({
     setHasChanges(true);
   };
 
+  const handleHideDockIconChange = (hideDockIcon: boolean) => {
+    const newConfig = { ...localConfig, hideDockIcon };
+    setLocalConfig(newConfig);
+    setHasChanges(true);
+  };
+
   const handleSave = () => {
     onSave(localConfig);
     setHasChanges(false);
@@ -166,6 +172,29 @@ function Settings({
 
         <p style={{ margin: '0 0 15px 30px', fontSize: '14px', color: '#666' }}>
           除錯日誌會在 Console 顯示詳細的切換資訊，開發用途
+        </p>
+
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            cursor: 'pointer',
+            marginBottom: '10px',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={localConfig.hideDockIcon ?? false}
+            onChange={(e) => handleHideDockIconChange(e.target.checked)}
+            style={{ marginRight: '10px', width: '20px', height: '20px' }}
+          />
+          <span style={{ fontSize: '16px', fontWeight: '500' }}>
+            關閉視窗後隱藏 Dock 圖示
+          </span>
+        </label>
+
+        <p style={{ margin: '0 0 0 30px', fontSize: '14px', color: '#666' }}>
+          啟用後關閉設定視窗時，Dock 圖示會隱藏，可透過選單列圖示重新開啟
         </p>
 
         <p style={{ margin: '0 0 0 0', fontSize: '14px', color: '#666' }}>

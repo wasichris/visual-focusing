@@ -35,6 +35,7 @@ const store = new Store<AppConfig>({
     enabled: true,
     showNotifications: false, // 預設關閉通知
     enableDebugLog: false, // 預設關閉除錯日誌
+    hideDockIcon: false, // 預設不隱藏 Dock 圖示
   },
 }) as StoreWithMethods<AppConfig>;
 
@@ -60,6 +61,9 @@ function createTray() {
         } else {
           createWindow();
         }
+        if (process.platform === 'darwin') {
+          app.dock?.show();
+        }
       },
     },
     { type: 'separator' },
@@ -77,12 +81,21 @@ function createTray() {
     if (mainWindow) {
       if (mainWindow.isVisible()) {
         mainWindow.hide();
+        if (process.platform === 'darwin' && store.get('hideDockIcon')) {
+          app.dock?.hide();
+        }
       } else {
         mainWindow.show();
         mainWindow.focus();
+        if (process.platform === 'darwin') {
+          app.dock?.show();
+        }
       }
     } else {
       createWindow();
+      if (process.platform === 'darwin') {
+        app.dock?.show();
+      }
     }
   });
 }
@@ -112,6 +125,10 @@ function createWindow() {
     if (!isQuitting) {
       event.preventDefault();
       mainWindow?.hide();
+      // 根據設定隱藏 Dock 圖示
+      if (process.platform === 'darwin' && store.get('hideDockIcon')) {
+        app.dock?.hide();
+      }
     }
   });
 
@@ -171,6 +188,7 @@ function setupIpcHandlers() {
       enabled: store.get('enabled'),
       showNotifications: store.get('showNotifications'),
       enableDebugLog: store.get('enableDebugLog'),
+      hideDockIcon: store.get('hideDockIcon'),
     };
   });
 
@@ -179,6 +197,7 @@ function setupIpcHandlers() {
     store.set('enabled', config.enabled);
     store.set('showNotifications', config.showNotifications);
     store.set('enableDebugLog', config.enableDebugLog);
+    store.set('hideDockIcon', config.hideDockIcon);
 
     // 更新 WindowManager 的除錯模式
     windowManagerInstance.setDebugMode(config.enableDebugLog);
@@ -267,6 +286,10 @@ app.whenReady().then(() => {
       mainWindow.focus();
     } else {
       createWindow();
+    }
+    // 顯示視窗時確保 Dock 圖示可見
+    if (process.platform === 'darwin') {
+      app.dock?.show();
     }
   });
 });
