@@ -36,6 +36,7 @@ const store = new Store<AppConfig>({
     showNotifications: false, // 預設關閉通知
     enableDebugLog: false, // 預設關閉除錯日誌
     hideDockIcon: false, // 預設不隱藏 Dock 圖示
+    launchAtLogin: false, // 預設不自動啟動
   },
 }) as StoreWithMethods<AppConfig>;
 
@@ -183,12 +184,15 @@ function setupConsoleForwarding() {
 
 function setupIpcHandlers() {
   ipcMain.handle('get-config', () => {
+    // launchAtLogin 從系統實際狀態讀取
+    const loginSettings = app.getLoginItemSettings();
     return {
       shortcuts: store.get('shortcuts'),
       enabled: store.get('enabled'),
       showNotifications: store.get('showNotifications'),
       enableDebugLog: store.get('enableDebugLog'),
       hideDockIcon: store.get('hideDockIcon'),
+      launchAtLogin: loginSettings.openAtLogin,
     };
   });
 
@@ -198,6 +202,9 @@ function setupIpcHandlers() {
     store.set('showNotifications', config.showNotifications);
     store.set('enableDebugLog', config.enableDebugLog);
     store.set('hideDockIcon', config.hideDockIcon);
+
+    // 設定開機自動啟動
+    app.setLoginItemSettings({ openAtLogin: config.launchAtLogin });
 
     // 更新 WindowManager 的除錯模式
     windowManagerInstance.setDebugMode(config.enableDebugLog);

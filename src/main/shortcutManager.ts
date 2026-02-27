@@ -29,6 +29,7 @@ export class ShortcutManager {
         showNotifications: false,
         enableDebugLog: false,
         hideDockIcon: false,
+        launchAtLogin: false,
       },
     }) as StoreWithMethods<AppConfig>;
   }

@@ -57,6 +57,12 @@ function Settings({
     setHasChanges(true);
   };
 
+  const handleLaunchAtLoginChange = (launchAtLogin: boolean) => {
+    const newConfig = { ...localConfig, launchAtLogin };
+    setLocalConfig(newConfig);
+    setHasChanges(true);
+  };
+
   const handleSave = () => {
     onSave(localConfig);
     setHasChanges(false);
@@ -196,11 +202,38 @@ function Settings({
         <p style={{ margin: '0 0 0 30px', fontSize: '14px', color: '#666' }}>
           啟用後關閉設定視窗時，Dock 圖示會隱藏，可透過選單列圖示重新開啟
         </p>
+      </div>
 
-        <p style={{ margin: '0 0 0 0', fontSize: '14px', color: '#666' }}>
-          {localConfig.enabled
-            ? '快速鍵已啟用，可以使用以下組合鍵切換視窗'
-            : '快速鍵已停用'}
+      {/* 系統設定 */}
+      <div
+        style={{
+          marginBottom: '20px',
+          padding: '15px',
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+        }}
+      >
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            cursor: 'pointer',
+            marginBottom: '10px',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={localConfig.launchAtLogin ?? false}
+            onChange={(e) => handleLaunchAtLoginChange(e.target.checked)}
+            style={{ marginRight: '10px', width: '20px', height: '20px' }}
+          />
+          <span style={{ fontSize: '16px', fontWeight: '500' }}>
+            開機時自動啟動
+          </span>
+        </label>
+
+        <p style={{ margin: '0 0 0 30px', fontSize: '14px', color: '#666' }}>
+          啟用後電腦開機時會自動啟動 Visual Focusing
         </p>
       </div>
 
@@ -213,7 +246,12 @@ function Settings({
           borderRadius: '8px',
         }}
       >
-        <h3 style={{ marginTop: 0, marginBottom: '15px' }}>快速鍵設定</h3>
+        <h3 style={{ marginTop: 0, marginBottom: '5px' }}>快速鍵設定</h3>
+        <p style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#666' }}>
+          {localConfig.enabled
+            ? '快速鍵已啟用，可以使用以下組合鍵切換視窗'
+            : '快速鍵已停用'}
+        </p>
 
         <div style={{ display: 'grid', gap: '15px' }}>
           <ShortcutInput
