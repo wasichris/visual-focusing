@@ -35,7 +35,10 @@ declare global {
     electronAPI: {
       getConfig: () => Promise<AppConfig>;
       setConfig: (config: AppConfig) => Promise<boolean>;
-      checkPermissions: () => Promise<boolean>;
+      checkPermissions: () => Promise<{
+        accessibility: boolean;
+        message: string;
+      }>;
       requestPermissions: () => Promise<boolean>;
       getAllWindows: () => Promise<WindowInfo[]>;
       getActiveWindow: () => Promise<WindowInfo | null>;
