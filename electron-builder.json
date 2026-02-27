@@ -47,6 +47,9 @@
       "height": 380
     }
   },
+  "extraResources": [
+    "assets/icon.png"
+  ],
   "extraMetadata": {
     "main": "dist/main/main/index.js"
   }

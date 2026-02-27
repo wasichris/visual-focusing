@@ -45,7 +45,9 @@ let tray: Tray | null = null;
 let isQuitting = false;
 
 function createTray() {
-  const iconPath = path.join(__dirname, '../../../assets/icon.png');
+  const iconPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'assets/icon.png')
+    : path.join(__dirname, '../../../assets/icon.png');
   const icon = nativeImage
     .createFromPath(iconPath)
     .resize({ width: 18, height: 18 });
@@ -119,7 +121,7 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:5173');
     // mainWindow.webContents.openDevTools(); // 註解掉自動開啟 DevTools
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    mainWindow.loadFile(path.join(__dirname, '../../renderer/index.html'));
   }
 
   mainWindow.on('close', (event) => {
@@ -278,7 +280,9 @@ app.whenReady().then(() => {
   logger.info('Electron app 就緒');
 
   if (process.platform === 'darwin') {
-    const iconPath = path.join(__dirname, '../../../assets/icon.png');
+    const iconPath = app.isPackaged
+      ? path.join(process.resourcesPath, 'assets/icon.png')
+      : path.join(__dirname, '../../../assets/icon.png');
     app.dock?.setIcon(nativeImage.createFromPath(iconPath));
   }
 
