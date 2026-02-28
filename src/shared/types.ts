@@ -27,6 +27,7 @@ export interface AppConfig {
   enableDebugLog: boolean; // 是否啟用除錯日誌，預設關閉
   hideDockIcon: boolean; // 關閉設定視窗後是否隱藏 Dock 圖示，預設關閉
   launchAtLogin: boolean; // 開機時自動啟動，預設關閉
+  language: string; // UI 語言，預設 'en'
 }
 
 export type Direction = 'up' | 'down' | 'left' | 'right';

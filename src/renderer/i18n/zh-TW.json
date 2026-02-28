@@ -1,0 +1,49 @@
+{
+  "app.title": "🎯 Visual Focusing",
+  "app.loading": "載入中...",
+
+  "permissions.granted": "✅ 權限已授予",
+  "permissions.required": "⚠️ 需要輔助使用權限",
+  "permissions.granted.desc": "應用程式已獲得控制視窗所需的權限。",
+  "permissions.required.desc": "此應用需要「輔助使用」權限才能控制其他視窗。",
+  "permissions.openSettings": "開啟系統設定",
+
+  "settings.enabled": "啟用快速鍵",
+  "settings.notifications": "顯示切換通知",
+  "settings.debugLog": "啟用除錯日誌",
+  "settings.debugLog.desc": "除錯日誌會在 Console 顯示詳細的切換資訊，開發用途。",
+  "settings.hideDock": "關閉視窗後隱藏 Dock 圖示",
+  "settings.hideDock.desc": "啟用後關閉設定視窗時，Dock 圖示會隱藏，可透過選單列圖示重新開啟。",
+  "settings.launchAtLogin": "開機時自動啟動",
+  "settings.launchAtLogin.desc": "啟用後電腦開機時會自動啟動 Visual Focusing。",
+
+  "shortcuts.title": "快速鍵設定",
+  "shortcuts.enabled.desc": "快速鍵已啟用，可以使用以下組合鍵切換視窗。",
+  "shortcuts.disabled.desc": "快速鍵已停用。",
+  "shortcuts.up": "向上切換 ↑",
+  "shortcuts.down": "向下切換 ↓",
+  "shortcuts.left": "向左切換 ←",
+  "shortcuts.right": "向右切換 →",
+  "shortcuts.hint": "💡 提示：使用 Command (⌘), Control (⌃), Option (⌥), Shift (⇧) 搭配方向鍵。",
+  "shortcuts.recording": "按下快速鍵組合...",
+  "shortcuts.placeholder": "點擊設定快速鍵",
+
+  "actions.cancel": "取消",
+  "actions.save": "儲存設定",
+
+  "help.title": "使用說明",
+  "help.1": "設定完成後，按下快速鍵即可切換到對應方向的視窗。",
+  "help.2": "應用程式會自動偵測目前視窗周圍的其他視窗。",
+  "help.3": "如果該方向沒有視窗，則不會有任何動作。",
+  "help.4": "可以隨時在此修改快速鍵組合。",
+
+  "update.available": "🎉 新版本 v{version} 已發布！",
+  "update.download": "前往下載 →",
+
+  "tray.open": "開啟 Visual Focusing",
+  "tray.quit": "結束",
+
+  "language.label": "Language",
+  "language.en": "English",
+  "language.zhTW": "繁體中文"
+}

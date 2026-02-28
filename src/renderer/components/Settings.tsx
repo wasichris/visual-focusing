@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { AppConfig } from '../../shared/types';
 import ShortcutInput from './ShortcutInput';
+import { useTranslation, supportedLanguages } from '../i18n';
 
 interface SettingsProps {
   config: AppConfig;
@@ -15,6 +16,7 @@ function Settings({
   onSave,
   onRequestPermissions,
 }: SettingsProps) {
+  const { t, language, setLanguage } = useTranslation();
   const [localConfig, setLocalConfig] = useState(config);
   const [hasChanges, setHasChanges] = useState(false);
   const [version, setVersion] = useState('');
@@ -37,49 +39,24 @@ function Settings({
       .catch(() => {});
   }, []);
 
+  const updateConfig = (partial: Partial<AppConfig>) => {
+    const newConfig = { ...localConfig, ...partial };
+    setLocalConfig(newConfig);
+    setHasChanges(true);
+  };
+
   const handleShortcutChange = (
     direction: 'up' | 'down' | 'left' | 'right',
     shortcut: string
   ) => {
-    const newConfig = {
-      ...localConfig,
-      shortcuts: {
-        ...localConfig.shortcuts,
-        [direction]: shortcut,
-      },
-    };
-    setLocalConfig(newConfig);
-    setHasChanges(true);
+    updateConfig({
+      shortcuts: { ...localConfig.shortcuts, [direction]: shortcut },
+    });
   };
 
-  const handleEnabledChange = (enabled: boolean) => {
-    const newConfig = { ...localConfig, enabled };
-    setLocalConfig(newConfig);
-    setHasChanges(true);
-  };
-
-  const handleNotificationsChange = (showNotifications: boolean) => {
-    const newConfig = { ...localConfig, showNotifications };
-    setLocalConfig(newConfig);
-    setHasChanges(true);
-  };
-
-  const handleDebugLogChange = (enableDebugLog: boolean) => {
-    const newConfig = { ...localConfig, enableDebugLog };
-    setLocalConfig(newConfig);
-    setHasChanges(true);
-  };
-
-  const handleHideDockIconChange = (hideDockIcon: boolean) => {
-    const newConfig = { ...localConfig, hideDockIcon };
-    setLocalConfig(newConfig);
-    setHasChanges(true);
-  };
-
-  const handleLaunchAtLoginChange = (launchAtLogin: boolean) => {
-    const newConfig = { ...localConfig, launchAtLogin };
-    setLocalConfig(newConfig);
-    setHasChanges(true);
+  const handleLanguageChange = (lang: string) => {
+    setLanguage(lang);
+    updateConfig({ language: lang });
   };
 
   const handleSave = () => {
@@ -89,12 +66,44 @@ function Settings({
 
   const handleReset = () => {
     setLocalConfig(config);
+    setLanguage(config.language || 'en');
     setHasChanges(false);
   };
 
   return (
     <div>
-      {/* 權限狀態 */}
+      {/* Language selector */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          marginBottom: '15px',
+          gap: '8px',
+        }}
+      >
+        <span style={{ fontSize: '14px', color: '#666' }}>
+          {t('language.label')}
+        </span>
+        <select
+          value={language}
+          onChange={(e) => handleLanguageChange(e.target.value)}
+          style={{
+            padding: '4px 8px',
+            borderRadius: '4px',
+            border: '1px solid #ddd',
+            fontSize: '14px',
+          }}
+        >
+          {supportedLanguages.map((lang) => (
+            <option key={lang.code} value={lang.code}>
+              {t(lang.label)}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Permissions */}
       <div
         style={{
           padding: '15px',
@@ -105,12 +114,12 @@ function Settings({
         }}
       >
         <h3 style={{ marginTop: 0, marginBottom: '10px' }}>
-          {hasPermission ? '✅ 權限已授予' : '⚠️ 需要輔助使用權限'}
+          {hasPermission ? t('permissions.granted') : t('permissions.required')}
         </h3>
         <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>
           {hasPermission
-            ? '應用程式已獲得控制視窗所需的權限'
-            : '此應用需要「輔助使用」權限才能控制其他視窗'}
+            ? t('permissions.granted.desc')
+            : t('permissions.required.desc')}
         </p>
         {!hasPermission && (
           <button
@@ -124,12 +133,12 @@ function Settings({
               cursor: 'pointer',
             }}
           >
-            開啟系統設定
+            {t('permissions.openSettings')}
           </button>
         )}
       </div>
 
-      {/* 啟用開關 */}
+      {/* Toggles */}
       <div
         style={{
           marginBottom: '20px',
@@ -149,11 +158,11 @@ function Settings({
           <input
             type="checkbox"
             checked={localConfig.enabled}
-            onChange={(e) => handleEnabledChange(e.target.checked)}
+            onChange={(e) => updateConfig({ enabled: e.target.checked })}
             style={{ marginRight: '10px', width: '20px', height: '20px' }}
           />
           <span style={{ fontSize: '16px', fontWeight: '500' }}>
-            啟用快速鍵
+            {t('settings.enabled')}
           </span>
         </label>
 
@@ -168,11 +177,13 @@ function Settings({
           <input
             type="checkbox"
             checked={localConfig.showNotifications ?? false}
-            onChange={(e) => handleNotificationsChange(e.target.checked)}
+            onChange={(e) =>
+              updateConfig({ showNotifications: e.target.checked })
+            }
             style={{ marginRight: '10px', width: '20px', height: '20px' }}
           />
           <span style={{ fontSize: '16px', fontWeight: '500' }}>
-            顯示切換通知
+            {t('settings.notifications')}
           </span>
         </label>
 
@@ -187,16 +198,15 @@ function Settings({
           <input
             type="checkbox"
             checked={localConfig.enableDebugLog ?? false}
-            onChange={(e) => handleDebugLogChange(e.target.checked)}
+            onChange={(e) => updateConfig({ enableDebugLog: e.target.checked })}
             style={{ marginRight: '10px', width: '20px', height: '20px' }}
           />
           <span style={{ fontSize: '16px', fontWeight: '500' }}>
-            啟用除錯日誌
+            {t('settings.debugLog')}
           </span>
         </label>
-
         <p style={{ margin: '0 0 15px 30px', fontSize: '14px', color: '#666' }}>
-          除錯日誌會在 Console 顯示詳細的切換資訊，開發用途
+          {t('settings.debugLog.desc')}
         </p>
 
         <label
@@ -210,20 +220,19 @@ function Settings({
           <input
             type="checkbox"
             checked={localConfig.hideDockIcon ?? false}
-            onChange={(e) => handleHideDockIconChange(e.target.checked)}
+            onChange={(e) => updateConfig({ hideDockIcon: e.target.checked })}
             style={{ marginRight: '10px', width: '20px', height: '20px' }}
           />
           <span style={{ fontSize: '16px', fontWeight: '500' }}>
-            關閉視窗後隱藏 Dock 圖示
+            {t('settings.hideDock')}
           </span>
         </label>
-
         <p style={{ margin: '0 0 0 30px', fontSize: '14px', color: '#666' }}>
-          啟用後關閉設定視窗時，Dock 圖示會隱藏，可透過選單列圖示重新開啟
+          {t('settings.hideDock.desc')}
         </p>
       </div>
 
-      {/* 系統設定 */}
+      {/* System */}
       <div
         style={{
           marginBottom: '20px',
@@ -243,20 +252,19 @@ function Settings({
           <input
             type="checkbox"
             checked={localConfig.launchAtLogin ?? false}
-            onChange={(e) => handleLaunchAtLoginChange(e.target.checked)}
+            onChange={(e) => updateConfig({ launchAtLogin: e.target.checked })}
             style={{ marginRight: '10px', width: '20px', height: '20px' }}
           />
           <span style={{ fontSize: '16px', fontWeight: '500' }}>
-            開機時自動啟動
+            {t('settings.launchAtLogin')}
           </span>
         </label>
-
         <p style={{ margin: '0 0 0 30px', fontSize: '14px', color: '#666' }}>
-          啟用後電腦開機時會自動啟動 Visual Focusing
+          {t('settings.launchAtLogin.desc')}
         </p>
       </div>
 
-      {/* 快速鍵設定 */}
+      {/* Shortcuts */}
       <div
         style={{
           marginBottom: '20px',
@@ -265,50 +273,45 @@ function Settings({
           borderRadius: '8px',
         }}
       >
-        <h3 style={{ marginTop: 0, marginBottom: '5px' }}>快速鍵設定</h3>
+        <h3 style={{ marginTop: 0, marginBottom: '5px' }}>
+          {t('shortcuts.title')}
+        </h3>
         <p style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#666' }}>
           {localConfig.enabled
-            ? '快速鍵已啟用，可以使用以下組合鍵切換視窗'
-            : '快速鍵已停用'}
+            ? t('shortcuts.enabled.desc')
+            : t('shortcuts.disabled.desc')}
         </p>
-
         <div style={{ display: 'grid', gap: '15px' }}>
           <ShortcutInput
-            label="向上切換 ↑"
+            label={t('shortcuts.up')}
             value={localConfig.shortcuts.up}
-            onChange={(value) => handleShortcutChange('up', value)}
+            onChange={(v) => handleShortcutChange('up', v)}
           />
           <ShortcutInput
-            label="向下切換 ↓"
+            label={t('shortcuts.down')}
             value={localConfig.shortcuts.down}
-            onChange={(value) => handleShortcutChange('down', value)}
+            onChange={(v) => handleShortcutChange('down', v)}
           />
           <ShortcutInput
-            label="向左切換 ←"
+            label={t('shortcuts.left')}
             value={localConfig.shortcuts.left}
-            onChange={(value) => handleShortcutChange('left', value)}
+            onChange={(v) => handleShortcutChange('left', v)}
           />
           <ShortcutInput
-            label="向右切換 →"
+            label={t('shortcuts.right')}
             value={localConfig.shortcuts.right}
-            onChange={(value) => handleShortcutChange('right', value)}
+            onChange={(v) => handleShortcutChange('right', v)}
           />
         </div>
-
         <p style={{ marginTop: '15px', fontSize: '13px', color: '#666' }}>
-          💡 提示：使用 Command (⌘), Control (⌃), Option (⌥), Shift (⇧)
-          搭配方向鍵
+          {t('shortcuts.hint')}
         </p>
       </div>
 
-      {/* 儲存按鈕 */}
+      {/* Save buttons */}
       {hasChanges && (
         <div
-          style={{
-            display: 'flex',
-            gap: '10px',
-            justifyContent: 'flex-end',
-          }}
+          style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}
         >
           <button
             onClick={handleReset}
@@ -321,7 +324,7 @@ function Settings({
               cursor: 'pointer',
             }}
           >
-            取消
+            {t('actions.cancel')}
           </button>
           <button
             onClick={handleSave}
@@ -334,12 +337,12 @@ function Settings({
               cursor: 'pointer',
             }}
           >
-            儲存設定
+            {t('actions.save')}
           </button>
         </div>
       )}
 
-      {/* 使用說明 */}
+      {/* Help */}
       <div
         style={{
           marginTop: '30px',
@@ -348,16 +351,16 @@ function Settings({
           borderRadius: '8px',
         }}
       >
-        <h3 style={{ marginTop: 0 }}>使用說明</h3>
+        <h3 style={{ marginTop: 0 }}>{t('help.title')}</h3>
         <ul style={{ marginBottom: 0, paddingLeft: '20px' }}>
-          <li>設定完成後，按下快速鍵即可切換到對應方向的視窗</li>
-          <li>應用程式會自動偵測目前視窗周圍的其他視窗</li>
-          <li>如果該方向沒有視窗，則不會有任何動作</li>
-          <li>可以隨時在此修改快速鍵組合</li>
+          <li>{t('help.1')}</li>
+          <li>{t('help.2')}</li>
+          <li>{t('help.3')}</li>
+          <li>{t('help.4')}</li>
         </ul>
       </div>
 
-      {/* 版本資訊 */}
+      {/* Update notification */}
       {updateInfo && (
         <div
           style={{
@@ -369,14 +372,14 @@ function Settings({
             fontSize: '14px',
           }}
         >
-          🎉 新版本 v{updateInfo.latestVersion} 已發布！
+          {t('update.available', { version: updateInfo.latestVersion })}
           <a
             href={updateInfo.releaseUrl}
             target="_blank"
             rel="noopener noreferrer"
             style={{ marginLeft: '8px', color: '#0056b3' }}
           >
-            前往下載 →
+            {t('update.download')}
           </a>
         </div>
       )}

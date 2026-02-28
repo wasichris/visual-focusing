@@ -38,6 +38,7 @@ const store = new Store<AppConfig>({
     enableDebugLog: false, // 預設關閉除錯日誌
     hideDockIcon: false, // 預設不隱藏 Dock 圖示
     launchAtLogin: false, // 預設不自動啟動
+    language: 'en', // 預設英文
   },
 }) as StoreWithMethods<AppConfig>;
 
@@ -54,6 +55,18 @@ function createTray() {
     .resize({ width: 18, height: 18 });
   tray = new Tray(icon);
   tray.setToolTip('Visual Focusing');
+  rebuildTrayMenu();
+}
+
+const trayTranslations: Record<string, Record<string, string>> = {
+  en: { open: 'Open Visual Focusing', quit: 'Quit' },
+  'zh-TW': { open: '開啟 Visual Focusing', quit: '結束' },
+};
+
+function rebuildTrayMenu() {
+  if (!tray) return;
+  const lang = store.get('language') || 'en';
+  const tr = trayTranslations[lang] || trayTranslations.en;
 
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -62,7 +75,7 @@ function createTray() {
     },
     { type: 'separator' },
     {
-      label: '開啟 Visual Focusing',
+      label: tr.open,
       click: async () => {
         if (process.platform === 'darwin') {
           await app.dock?.show();
@@ -77,7 +90,7 @@ function createTray() {
     },
     { type: 'separator' },
     {
-      label: '結束',
+      label: tr.quit,
       click: () => {
         isQuitting = true;
         app.quit();
@@ -85,7 +98,6 @@ function createTray() {
     },
   ]);
 
-  // 左鍵、右鍵點擊都顯示選單
   tray.setContextMenu(contextMenu);
 }
 
@@ -181,6 +193,7 @@ function setupIpcHandlers() {
       enableDebugLog: store.get('enableDebugLog'),
       hideDockIcon: store.get('hideDockIcon'),
       launchAtLogin: loginSettings.openAtLogin,
+      language: store.get('language'),
     };
   });
 
@@ -190,6 +203,13 @@ function setupIpcHandlers() {
     store.set('showNotifications', config.showNotifications);
     store.set('enableDebugLog', config.enableDebugLog);
     store.set('hideDockIcon', config.hideDockIcon);
+
+    // 語言變更時重建 tray 選單
+    const prevLang = store.get('language');
+    store.set('language', config.language);
+    if (config.language !== prevLang) {
+      rebuildTrayMenu();
+    }
 
     // 設定開機自動啟動
     app.setLoginItemSettings({ openAtLogin: config.launchAtLogin });

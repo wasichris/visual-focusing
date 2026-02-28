@@ -1,0 +1,49 @@
+{
+  "app.title": "🎯 Visual Focusing",
+  "app.loading": "Loading...",
+
+  "permissions.granted": "✅ Permissions Granted",
+  "permissions.required": "⚠️ Accessibility Permission Required",
+  "permissions.granted.desc": "The app has the permissions needed to control windows.",
+  "permissions.required.desc": "This app requires Accessibility permission to control other windows.",
+  "permissions.openSettings": "Open System Settings",
+
+  "settings.enabled": "Enable Shortcuts",
+  "settings.notifications": "Show Switch Notifications",
+  "settings.debugLog": "Enable Debug Log",
+  "settings.debugLog.desc": "Debug logs display detailed switch info in Console, for development use.",
+  "settings.hideDock": "Hide Dock Icon After Closing Window",
+  "settings.hideDock.desc": "When enabled, the Dock icon hides after closing the settings window. Reopen via menu bar icon.",
+  "settings.launchAtLogin": "Launch at Login",
+  "settings.launchAtLogin.desc": "When enabled, Visual Focusing starts automatically at login.",
+
+  "shortcuts.title": "Shortcut Settings",
+  "shortcuts.enabled.desc": "Shortcuts are enabled. Use the key combos below to switch windows.",
+  "shortcuts.disabled.desc": "Shortcuts are disabled.",
+  "shortcuts.up": "Switch Up ↑",
+  "shortcuts.down": "Switch Down ↓",
+  "shortcuts.left": "Switch Left ←",
+  "shortcuts.right": "Switch Right →",
+  "shortcuts.hint": "💡 Tip: Use Command (⌘), Control (⌃), Option (⌥), Shift (⇧) with arrow keys.",
+  "shortcuts.recording": "Press a shortcut combo...",
+  "shortcuts.placeholder": "Click to set shortcut",
+
+  "actions.cancel": "Cancel",
+  "actions.save": "Save Settings",
+
+  "help.title": "Instructions",
+  "help.1": "After setup, press the shortcut key to switch to the window in that direction.",
+  "help.2": "The app automatically detects nearby windows around the current one.",
+  "help.3": "If no window exists in that direction, nothing happens.",
+  "help.4": "You can change the shortcut combos here anytime.",
+
+  "update.available": "🎉 New version v{version} is available!",
+  "update.download": "Download →",
+
+  "tray.open": "Open Visual Focusing",
+  "tray.quit": "Quit",
+
+  "language.label": "Language",
+  "language.en": "English",
+  "language.zhTW": "繁體中文"
+}

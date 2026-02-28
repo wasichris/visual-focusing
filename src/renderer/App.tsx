@@ -1,6 +1,42 @@
 import { useState, useEffect } from 'react';
 import Settings from './components/Settings';
 import type { AppConfig } from '../shared/types';
+import { I18nProvider, useTranslation } from './i18n';
+
+function AppContent({
+  config,
+  setConfig,
+  hasPermission,
+  onRequestPermissions,
+}: {
+  config: AppConfig;
+  setConfig: (c: AppConfig) => void;
+  hasPermission: boolean;
+  onRequestPermissions: () => void;
+}) {
+  const { t } = useTranslation();
+
+  const handleSaveConfig = async (newConfig: AppConfig) => {
+    try {
+      await window.electronAPI.setConfig(newConfig);
+      setConfig(newConfig);
+    } catch (error) {
+      console.error('Save config failed:', error);
+    }
+  };
+
+  return (
+    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+      <h1 style={{ marginBottom: '20px' }}>{t('app.title')}</h1>
+      <Settings
+        config={config}
+        hasPermission={hasPermission}
+        onSave={handleSaveConfig}
+        onRequestPermissions={onRequestPermissions}
+      />
+    </div>
+  );
+}
 
 function App() {
   const [config, setConfig] = useState<AppConfig | null>(null);
@@ -17,7 +53,7 @@ function App() {
       const cfg = await window.electronAPI.getConfig();
       setConfig(cfg);
     } catch (error) {
-      console.error('載入設定失敗:', error);
+      console.error('Load config failed:', error);
     } finally {
       setLoading(false);
     }
@@ -28,16 +64,7 @@ function App() {
       const status = await window.electronAPI.checkPermissions();
       setHasPermission(status.accessibility);
     } catch (error) {
-      console.error('檢查權限失敗:', error);
-    }
-  };
-
-  const handleSaveConfig = async (newConfig: AppConfig) => {
-    try {
-      await window.electronAPI.setConfig(newConfig);
-      setConfig(newConfig);
-    } catch (error) {
-      console.error('儲存設定失敗:', error);
+      console.error('Check permissions failed:', error);
     }
   };
 
@@ -46,7 +73,7 @@ function App() {
       const granted = await window.electronAPI.requestPermissions();
       setHasPermission(granted);
     } catch (error) {
-      console.error('請求權限失敗:', error);
+      console.error('Request permissions failed:', error);
     }
   };
 
@@ -60,22 +87,20 @@ function App() {
           height: '100vh',
         }}
       >
-        <p>載入中...</p>
+        <p>Loading...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '20px' }}>🎯 Visual Focusing</h1>
-      
-      <Settings
+    <I18nProvider language={config.language || 'en'}>
+      <AppContent
         config={config}
+        setConfig={setConfig}
         hasPermission={hasPermission}
-        onSave={handleSaveConfig}
         onRequestPermissions={handleRequestPermissions}
       />
-    </div>
+    </I18nProvider>
   );
 }
 

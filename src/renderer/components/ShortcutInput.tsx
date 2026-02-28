@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from '../i18n';
 
 interface ShortcutInputProps {
   label: string;
@@ -7,6 +8,7 @@ interface ShortcutInputProps {
 }
 
 function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
+  const { t } = useTranslation();
   const [isRecording, setIsRecording] = useState(false);
   const [recordedKeys, setRecordedKeys] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -107,7 +109,7 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
   const displayValue = isRecording
     ? recordedKeys.length > 0
       ? recordedKeys.join(' + ')
-      : '按下快速鍵組合...'
+      : t('shortcuts.recording')
     : value;
 
   return (
@@ -121,7 +123,7 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
         onFocus={handleStartRecording}
         onBlur={handleBlur}
         readOnly
-        placeholder="點擊設定快速鍵"
+        placeholder={t('shortcuts.placeholder')}
         style={{
           flex: 1,
           padding: '8px 12px',
