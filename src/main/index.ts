@@ -57,15 +57,15 @@ function createTray() {
   const contextMenu = Menu.buildFromTemplate([
     {
       label: '開啟 Visual Focusing',
-      click: () => {
+      click: async () => {
+        if (process.platform === 'darwin') {
+          await app.dock?.show();
+        }
         if (mainWindow) {
           mainWindow.show();
           mainWindow.focus();
         } else {
           createWindow();
-        }
-        if (process.platform === 'darwin') {
-          app.dock?.show();
         }
       },
     },
@@ -79,28 +79,8 @@ function createTray() {
     },
   ]);
 
+  // 左鍵、右鍵點擊都顯示選單
   tray.setContextMenu(contextMenu);
-  tray.on('click', () => {
-    if (mainWindow) {
-      if (mainWindow.isVisible()) {
-        mainWindow.hide();
-        if (process.platform === 'darwin' && store.get('hideDockIcon')) {
-          app.dock?.hide();
-        }
-      } else {
-        mainWindow.show();
-        mainWindow.focus();
-        if (process.platform === 'darwin') {
-          app.dock?.show();
-        }
-      }
-    } else {
-      createWindow();
-      if (process.platform === 'darwin') {
-        app.dock?.show();
-      }
-    }
-  });
 }
 
 function createWindow() {
@@ -291,16 +271,15 @@ app.whenReady().then(() => {
   createWindow();
   initializeApp();
 
-  app.on('activate', () => {
+  app.on('activate', async () => {
+    if (process.platform === 'darwin') {
+      await app.dock?.show();
+    }
     if (mainWindow) {
       mainWindow.show();
       mainWindow.focus();
     } else {
       createWindow();
-    }
-    // 顯示視窗時確保 Dock 圖示可見
-    if (process.platform === 'darwin') {
-      app.dock?.show();
     }
   });
 });
