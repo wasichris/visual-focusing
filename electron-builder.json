@@ -22,10 +22,10 @@
       }
     ],
     "icon": "assets/icon.icns",
-    "identity": null,
     "entitlements": "build/entitlements.mac.plist",
     "entitlementsInherit": "build/entitlements.mac.plist",
-    "gatekeeperAssess": false
+    "gatekeeperAssess": false,
+    "forceCodeSigning": false
   },
   "dmg": {
     "title": "Visual Focusing",

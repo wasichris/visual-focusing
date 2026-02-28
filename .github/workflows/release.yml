@@ -19,7 +19,59 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run build && npx electron-builder --publish never
+      - name: Build and package
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: npm run build && npx electron-builder --publish never
+
+      - name: Ad-hoc sign the app bundles
+        run: |
+          for app in release/mac*/Visual\ Focusing.app; do
+            if [ -d "$app" ]; then
+              echo "Ad-hoc signing: $app"
+              codesign --force --deep --sign - "$app"
+            fi
+          done
+
+      - name: Re-package DMG with signed app
+        run: |
+          for dmg in release/*.dmg; do
+            if [ -f "$dmg" ]; then
+              echo "Re-packaging: $dmg"
+              MOUNT_DIR=$(mktemp -d)
+              hdiutil attach "$dmg" -mountpoint "$MOUNT_DIR" -nobrowse
+              APP_PATH=$(find "$MOUNT_DIR" -name "*.app" -maxdepth 1 | head -1)
+              if [ -n "$APP_PATH" ]; then
+                TEMP_DIR=$(mktemp -d)
+                cp -R "$MOUNT_DIR"/* "$TEMP_DIR"/
+                hdiutil detach "$MOUNT_DIR"
+                codesign --force --deep --sign - "$TEMP_DIR/Visual Focusing.app"
+                rm "$dmg"
+                hdiutil create -volname "Visual Focusing" -srcfolder "$TEMP_DIR" -ov -format UDZO "$dmg"
+                rm -rf "$TEMP_DIR"
+              else
+                hdiutil detach "$MOUNT_DIR"
+              fi
+              rm -rf "$MOUNT_DIR"
+            fi
+          done
+
+      - name: Ad-hoc sign zip contents
+        run: |
+          for zipfile in release/*.zip; do
+            if [ -f "$zipfile" ]; then
+              echo "Re-signing zip: $zipfile"
+              TEMP_DIR=$(mktemp -d)
+              unzip -q "$zipfile" -d "$TEMP_DIR"
+              APP_PATH=$(find "$TEMP_DIR" -name "*.app" -maxdepth 1 | head -1)
+              if [ -n "$APP_PATH" ]; then
+                codesign --force --deep --sign - "$APP_PATH"
+                rm "$zipfile"
+                cd "$TEMP_DIR" && zip -r -q "$zipfile" . && cd -
+              fi
+              rm -rf "$TEMP_DIR"
+            fi
+          done
 
       - uses: softprops/action-gh-release@v2
         with:
@@ -27,3 +79,24 @@ jobs:
             release/*.dmg
             release/*.zip
           generate_release_notes: true
+          body: |
+            ## Installation / 安裝說明
+
+            ### macOS
+            1. Download the `.dmg` file for your architecture (arm64 for Apple Silicon, x64 for Intel)
+            2. Open the `.dmg` and drag **Visual Focusing** to **Applications**
+            3. If macOS shows a security warning, run this command in Terminal:
+               ```
+               xattr -cr /Applications/Visual\ Focusing.app
+               ```
+               Then open the app again.
+
+            ---
+
+            1. 下載適合你架構的 `.dmg` 檔案（arm64 適用 Apple Silicon，x64 適用 Intel）
+            2. 開啟 `.dmg` 並將 **Visual Focusing** 拖入 **應用程式** 資料夾
+            3. 若 macOS 顯示安全性警告，請在終端機執行：
+               ```
+               xattr -cr /Applications/Visual\ Focusing.app
+               ```
+               然後重新開啟應用程式。
