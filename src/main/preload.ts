@@ -12,4 +12,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('get-active-window'),
   suspendShortcuts: () => ipcRenderer.invoke('suspend-shortcuts'),
   resumeShortcuts: () => ipcRenderer.invoke('resume-shortcuts'),
+  getVersion: (): Promise<string> => ipcRenderer.invoke('get-version'),
+  checkUpdate: (): Promise<{
+    hasUpdate: boolean;
+    latestVersion: string;
+    currentVersion: string;
+    releaseUrl: string;
+  }> => ipcRenderer.invoke('check-update'),
 });

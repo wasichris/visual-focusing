@@ -45,6 +45,13 @@ declare global {
       getActiveWindow: () => Promise<WindowInfo | null>;
       suspendShortcuts: () => Promise<void>;
       resumeShortcuts: () => Promise<void>;
+      getVersion: () => Promise<string>;
+      checkUpdate: () => Promise<{
+        hasUpdate: boolean;
+        latestVersion: string;
+        currentVersion: string;
+        releaseUrl: string;
+      }>;
     };
   }
 }

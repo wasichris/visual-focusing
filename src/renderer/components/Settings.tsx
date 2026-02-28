@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { AppConfig } from '../../shared/types';
 import ShortcutInput from './ShortcutInput';
 
@@ -17,6 +17,25 @@ function Settings({
 }: SettingsProps) {
   const [localConfig, setLocalConfig] = useState(config);
   const [hasChanges, setHasChanges] = useState(false);
+  const [version, setVersion] = useState('');
+  const [updateInfo, setUpdateInfo] = useState<{
+    hasUpdate: boolean;
+    latestVersion: string;
+    releaseUrl: string;
+  } | null>(null);
+
+  useEffect(() => {
+    window.electronAPI
+      .getVersion()
+      .then(setVersion)
+      .catch(() => {});
+    window.electronAPI
+      .checkUpdate()
+      .then((info) => {
+        if (info.hasUpdate) setUpdateInfo(info);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleShortcutChange = (
     direction: 'up' | 'down' | 'left' | 'right',
@@ -337,6 +356,42 @@ function Settings({
           <li>可以隨時在此修改快速鍵組合</li>
         </ul>
       </div>
+
+      {/* 版本資訊 */}
+      {updateInfo && (
+        <div
+          style={{
+            marginTop: '20px',
+            padding: '12px 15px',
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffc107',
+            borderRadius: '8px',
+            fontSize: '14px',
+          }}
+        >
+          🎉 新版本 v{updateInfo.latestVersion} 已發布！
+          <a
+            href={updateInfo.releaseUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ marginLeft: '8px', color: '#0056b3' }}
+          >
+            前往下載 →
+          </a>
+        </div>
+      )}
+      {version && (
+        <p
+          style={{
+            textAlign: 'center',
+            fontSize: '12px',
+            color: '#999',
+            marginTop: '20px',
+          }}
+        >
+          Visual Focusing v{version}
+        </p>
+      )}
     </div>
   );
 }

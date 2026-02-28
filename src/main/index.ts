@@ -16,6 +16,7 @@ import { shortcutManager } from './shortcutManager';
 import { permissionsManager } from './permissions';
 import { windowManagerInstance } from './windowManager';
 import { logger } from './logger';
+import { checkForUpdates } from './updateChecker';
 
 // 使用型別斷言繞過 ElectronStore 的型別限制
 type StoreWithMethods<T extends Record<string, any>> = Store<T> & {
@@ -55,6 +56,11 @@ function createTray() {
   tray.setToolTip('Visual Focusing');
 
   const contextMenu = Menu.buildFromTemplate([
+    {
+      label: `Visual Focusing v${app.getVersion()}`,
+      enabled: false,
+    },
+    { type: 'separator' },
     {
       label: '開啟 Visual Focusing',
       click: async () => {
@@ -223,6 +229,14 @@ function setupIpcHandlers() {
 
   ipcMain.handle('resume-shortcuts', () => {
     shortcutManager.resume();
+  });
+
+  ipcMain.handle('get-version', () => {
+    return app.getVersion();
+  });
+
+  ipcMain.handle('check-update', async () => {
+    return await checkForUpdates(app.getVersion());
   });
 }
 
