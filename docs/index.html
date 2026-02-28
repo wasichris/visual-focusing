@@ -1,497 +1,1339 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visual Focusing — Spatial Window Navigation for macOS</title>
-  <meta name="description" content="Navigate between windows with keyboard shortcuts — like spatial navigation for your desktop.">
-  <meta property="og:title" content="Visual Focusing">
-  <meta property="og:description" content="Navigate between windows with keyboard shortcuts — spatial navigation for macOS.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="assets/icon.png">
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-  <!-- Noise grain overlay -->
-  <div class="noise" aria-hidden="true"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visual Focusing — Spatial Window Navigation for macOS</title>
+    <meta
+      name="description"
+      content="Navigate between windows with keyboard shortcuts — like spatial navigation for your desktop."
+    />
+    <meta property="og:title" content="Visual Focusing" />
+    <meta
+      property="og:description"
+      content="Navigate between windows with keyboard shortcuts — spatial navigation for macOS."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="assets/icon.png" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- Noise grain overlay -->
+    <div class="noise" aria-hidden="true"></div>
 
-  <!-- ============ NAVIGATION ============ -->
-  <nav class="nav" id="nav">
-    <div class="nav__inner container">
-      <a class="nav__logo" href="#">
-        <img src="assets/icon.png" alt="Visual Focusing" width="28" height="28">
-        <span>Visual Focusing</span>
-      </a>
-      <div class="nav__links" id="navLinks">
-        <a href="#features" data-i18n="nav.features">Features</a>
-        <a href="#how-it-works" data-i18n="nav.howItWorks">How It Works</a>
-        <a href="#shortcuts" data-i18n="nav.shortcuts">Shortcuts</a>
-        <a href="#quickstart" data-i18n="nav.quickstart">Quick Start</a>
-      </div>
-      <div class="nav__actions">
-        <button class="lang-btn" id="langToggle" aria-label="Toggle language">
-          <span data-i18n="lang.toggle">繁中</span>
-        </button>
-        <!-- Replace # with your GitHub repo URL -->
-        <a class="nav__gh" href="https://github.com/user/visual-focusing" target="_blank" rel="noopener" aria-label="GitHub">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+    <!-- ============ NAVIGATION ============ -->
+    <nav class="nav" id="nav">
+      <div class="nav__inner container">
+        <a class="nav__logo" href="#">
+          <img
+            src="assets/icon.png"
+            alt="Visual Focusing"
+            width="28"
+            height="28"
+          />
+          <span>Visual Focusing</span>
         </a>
-        <button class="nav__burger" id="menuToggle" aria-label="Toggle menu">
-          <span></span><span></span><span></span>
-        </button>
+        <div class="nav__links" id="navLinks">
+          <a href="#features" data-i18n="nav.features">Features</a>
+          <a href="#how-it-works" data-i18n="nav.howItWorks">How It Works</a>
+          <a href="#shortcuts" data-i18n="nav.shortcuts">Shortcuts</a>
+          <a href="#quickstart" data-i18n="nav.quickstart">Quick Start</a>
+        </div>
+        <div class="nav__actions">
+          <button class="lang-btn" id="langToggle" aria-label="Toggle language">
+            <span data-i18n="lang.toggle">繁中</span>
+          </button>
+          <!-- Replace # with your GitHub repo URL -->
+          <a
+            class="nav__gh"
+            href="https://github.com/wasichris/visual-focusing"
+            target="_blank"
+            rel="noopener"
+            aria-label="GitHub"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+              />
+            </svg>
+          </a>
+          <button class="nav__burger" id="menuToggle" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
       </div>
-    </div>
-  </nav>
+    </nav>
 
-  <!-- ============ HERO ============ -->
-  <section class="hero" id="hero">
-    <div class="hero__glow" aria-hidden="true"></div>
-    <div class="hero__inner container">
-      <div class="hero__text">
-        <span class="hero__badge reveal" data-i18n="hero.badge">macOS Utility</span>
-        <h1 class="hero__title reveal">
-          <span class="hero__title-line" data-i18n="hero.title1">Navigate windows</span>
-          <em class="hero__title-line" data-i18n="hero.title2">the way they're laid out</em>
-        </h1>
-        <p class="hero__sub reveal" data-i18n="hero.subtitle">
-          Switch to the nearest window in any direction using keyboard shortcuts. Spatial, intuitive, instant.
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="hero">
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="hero__inner container">
+        <div class="hero__text">
+          <span class="hero__badge reveal" data-i18n="hero.badge"
+            >macOS Utility</span
+          >
+          <h1 class="hero__title reveal">
+            <span class="hero__title-line" data-i18n="hero.title1"
+              >Navigate windows</span
+            >
+            <em class="hero__title-line" data-i18n="hero.title2"
+              >the way they're laid out</em
+            >
+          </h1>
+          <p class="hero__sub reveal" data-i18n="hero.subtitle">
+            Switch to the nearest window in any direction using keyboard
+            shortcuts. Spatial, intuitive, instant.
+          </p>
+          <div class="hero__ctas reveal">
+            <a
+              class="btn btn--primary"
+              href="#quickstart"
+              data-i18n="hero.download"
+              >Download</a
+            >
+            <a
+              class="btn btn--ghost"
+              href="https://github.com/wasichris/visual-focusing"
+              target="_blank"
+              rel="noopener"
+              data-i18n="hero.github"
+              >View on GitHub</a
+            >
+          </div>
+        </div>
+        <div class="hero__visual reveal">
+          <div class="hero-keys" id="heroKeys">
+            <div class="hero-key hero-key--up" data-hk="up">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 19V5M5 12l7-7 7 7" />
+              </svg>
+            </div>
+            <div class="hero-key hero-key--left" data-hk="left">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+            </div>
+            <div class="hero-key hero-key--center">
+              <div class="hero-key__dot"></div>
+            </div>
+            <div class="hero-key hero-key--right" data-hk="right">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </div>
+            <div class="hero-key hero-key--down" data-hk="down">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 5v14M19 12l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hero__scroll" aria-hidden="true">
+        <div class="hero__scroll-line"></div>
+      </div>
+    </section>
+
+    <!-- ============ FEATURES ============ -->
+    <section class="features" id="features">
+      <div class="container">
+        <span class="section-label reveal" data-i18n="features.label"
+          >— Features</span
+        >
+        <h2 class="section-title reveal" data-i18n="features.title">
+          Built for keyboard-driven workflows
+        </h2>
+        <div class="features__grid">
+          <div class="feat-card reveal">
+            <div class="feat-card__icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </div>
+            <h3 class="feat-card__title" data-i18n="features.spatial.title">
+              Spatial Navigation
+            </h3>
+            <p class="feat-card__desc" data-i18n="features.spatial.desc">
+              Switch windows based on their actual screen position — not an
+              arbitrary list order.
+            </p>
+          </div>
+
+          <div class="feat-card reveal">
+            <div class="feat-card__icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </div>
+            <h3 class="feat-card__title" data-i18n="features.visibility.title">
+              Visibility-Aware
+            </h3>
+            <p class="feat-card__desc" data-i18n="features.visibility.desc">
+              The algorithm considers visible area, z-order, and overlap to pick
+              the right window.
+            </p>
+          </div>
+
+          <div class="feat-card reveal">
+            <div class="feat-card__icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+            </div>
+            <h3 class="feat-card__title" data-i18n="features.global.title">
+              Global Hotkeys
+            </h3>
+            <p class="feat-card__desc" data-i18n="features.global.desc">
+              Works no matter which application is currently focused. Always
+              ready.
+            </p>
+          </div>
+
+          <div class="feat-card reveal">
+            <div class="feat-card__icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path
+                  d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
+                />
+              </svg>
+            </div>
+            <h3 class="feat-card__title" data-i18n="features.custom.title">
+              Fully Customizable
+            </h3>
+            <p class="feat-card__desc" data-i18n="features.custom.desc">
+              Record any modifier + key combination you prefer. Make it yours.
+            </p>
+          </div>
+
+          <div class="feat-card reveal">
+            <div class="feat-card__icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M3 9h18M9 21V9" />
+              </svg>
+            </div>
+            <h3 class="feat-card__title" data-i18n="features.menubar.title">
+              Menu Bar Native
+            </h3>
+            <p class="feat-card__desc" data-i18n="features.menubar.desc">
+              Lives quietly in your menu bar. Optionally hides from Dock.
+              Launches at login.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HOW IT WORKS ============ -->
+    <section class="how-it-works" id="how-it-works">
+      <div class="container">
+        <span class="section-label reveal" data-i18n="howItWorks.label"
+          >— How It Works</span
+        >
+        <h2 class="section-title reveal" data-i18n="howItWorks.title">
+          See it in action
+        </h2>
+        <p class="section-sub reveal" data-i18n="howItWorks.subtitle">
+          Click the arrows or press ↑ ↓ ← → on your keyboard
         </p>
-        <div class="hero__ctas reveal">
-          <a class="btn btn--primary" href="#quickstart" data-i18n="hero.download">Download</a>
-          <a class="btn btn--ghost" href="https://github.com/user/visual-focusing" target="_blank" rel="noopener" data-i18n="hero.github">View on GitHub</a>
-        </div>
-      </div>
-      <div class="hero__visual reveal">
-        <div class="hero-keys" id="heroKeys">
-          <div class="hero-key hero-key--up" data-hk="up">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-          </div>
-          <div class="hero-key hero-key--left" data-hk="left">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          </div>
-          <div class="hero-key hero-key--center">
-            <div class="hero-key__dot"></div>
-          </div>
-          <div class="hero-key hero-key--right" data-hk="right">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </div>
-          <div class="hero-key hero-key--down" data-hk="down">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="hero__scroll" aria-hidden="true">
-      <div class="hero__scroll-line"></div>
-    </div>
-  </section>
 
-  <!-- ============ FEATURES ============ -->
-  <section class="features" id="features">
-    <div class="container">
-      <span class="section-label reveal" data-i18n="features.label">— Features</span>
-      <h2 class="section-title reveal" data-i18n="features.title">Built for keyboard-driven workflows</h2>
-      <div class="features__grid">
+        <div class="demo reveal" id="interactiveDemo">
+          <!-- Direction arrows -->
+          <button
+            class="demo__arrow demo__arrow--up"
+            data-direction="up"
+            aria-label="Focus Up"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </button>
+          <button
+            class="demo__arrow demo__arrow--right"
+            data-direction="right"
+            aria-label="Focus Right"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+          <button
+            class="demo__arrow demo__arrow--down"
+            data-direction="down"
+            aria-label="Focus Down"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 5v14M19 12l-7 7-7-7" />
+            </svg>
+          </button>
+          <button
+            class="demo__arrow demo__arrow--left"
+            data-direction="left"
+            aria-label="Focus Left"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
 
-        <div class="feat-card reveal">
-          <div class="feat-card__icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="3"/></svg>
-          </div>
-          <h3 class="feat-card__title" data-i18n="features.spatial.title">Spatial Navigation</h3>
-          <p class="feat-card__desc" data-i18n="features.spatial.desc">Switch windows based on their actual screen position — not an arbitrary list order.</p>
-        </div>
-
-        <div class="feat-card reveal">
-          <div class="feat-card__icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
-          </div>
-          <h3 class="feat-card__title" data-i18n="features.visibility.title">Visibility-Aware</h3>
-          <p class="feat-card__desc" data-i18n="features.visibility.desc">The algorithm considers visible area, z-order, and overlap to pick the right window.</p>
-        </div>
-
-        <div class="feat-card reveal">
-          <div class="feat-card__icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-          </div>
-          <h3 class="feat-card__title" data-i18n="features.global.title">Global Hotkeys</h3>
-          <p class="feat-card__desc" data-i18n="features.global.desc">Works no matter which application is currently focused. Always ready.</p>
-        </div>
-
-        <div class="feat-card reveal">
-          <div class="feat-card__icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-          </div>
-          <h3 class="feat-card__title" data-i18n="features.custom.title">Fully Customizable</h3>
-          <p class="feat-card__desc" data-i18n="features.custom.desc">Record any modifier + key combination you prefer. Make it yours.</p>
-        </div>
-
-        <div class="feat-card reveal">
-          <div class="feat-card__icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-          </div>
-          <h3 class="feat-card__title" data-i18n="features.menubar.title">Menu Bar Native</h3>
-          <p class="feat-card__desc" data-i18n="features.menubar.desc">Lives quietly in your menu bar. Optionally hides from Dock. Launches at login.</p>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ HOW IT WORKS ============ -->
-  <section class="how-it-works" id="how-it-works">
-    <div class="container">
-      <span class="section-label reveal" data-i18n="howItWorks.label">— How It Works</span>
-      <h2 class="section-title reveal" data-i18n="howItWorks.title">See it in action</h2>
-      <p class="section-sub reveal" data-i18n="howItWorks.subtitle">Click the arrows or press ↑ ↓ ← → on your keyboard</p>
-
-      <div class="demo reveal" id="interactiveDemo">
-        <!-- Direction arrows -->
-        <button class="demo__arrow demo__arrow--up" data-direction="up" aria-label="Focus Up">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-        </button>
-        <button class="demo__arrow demo__arrow--right" data-direction="right" aria-label="Focus Right">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-        <button class="demo__arrow demo__arrow--down" data-direction="down" aria-label="Focus Down">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-        </button>
-        <button class="demo__arrow demo__arrow--left" data-direction="left" aria-label="Focus Left">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        </button>
-
-        <!-- Desktop surface -->
-        <div class="demo__desktop" id="demoDesktop">
-          <!-- Menu bar -->
-          <div class="demo__menubar">
-            <span class="demo__apple-icon">&#63743;</span>
-            <span>File</span><span>Edit</span><span>View</span>
-          </div>
-
-          <!-- Window: Slack -->
-          <div class="demo__win" id="win-slack" data-window="slack">
-            <div class="demo__win-bar">
-              <div class="demo__win-dots"><i></i><i></i><i></i></div>
-              <span class="demo__win-name">Slack</span>
+          <!-- Desktop surface -->
+          <div class="demo__desktop" id="demoDesktop">
+            <!-- Menu bar -->
+            <div class="demo__menubar">
+              <span class="demo__apple-icon">&#63743;</span>
+              <span>File</span><span>Edit</span><span>View</span>
             </div>
-            <div class="demo__win-body demo__win-body--chat">
-              <div class="fake-sidebar">
-                <div class="fake-ch"></div>
-                <div class="fake-ch fake-ch--active"></div>
-                <div class="fake-ch"></div>
+
+            <!-- Window: Slack -->
+            <div class="demo__win" id="win-slack" data-window="slack">
+              <div class="demo__win-bar">
+                <div class="demo__win-dots"><i></i><i></i><i></i></div>
+                <span class="demo__win-name">Slack</span>
               </div>
-              <div class="fake-messages">
-                <div class="fake-msg"><span class="fake-avatar"></span><span class="fake-bubble"></span></div>
-                <div class="fake-msg"><span class="fake-avatar"></span><span class="fake-bubble fake-bubble--long"></span></div>
+              <div class="demo__win-body demo__win-body--chat">
+                <div class="fake-sidebar">
+                  <div class="fake-ch"></div>
+                  <div class="fake-ch fake-ch--active"></div>
+                  <div class="fake-ch"></div>
+                </div>
+                <div class="fake-messages">
+                  <div class="fake-msg">
+                    <span class="fake-avatar"></span
+                    ><span class="fake-bubble"></span>
+                  </div>
+                  <div class="fake-msg">
+                    <span class="fake-avatar"></span
+                    ><span class="fake-bubble fake-bubble--long"></span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <!-- Window: VS Code -->
+            <div
+              class="demo__win demo__win--active"
+              id="win-vscode"
+              data-window="vscode"
+            >
+              <div class="demo__win-bar">
+                <div class="demo__win-dots"><i></i><i></i><i></i></div>
+                <span class="demo__win-name">VS Code</span>
+              </div>
+              <div class="demo__win-body demo__win-body--code">
+                <div class="cl">
+                  <span class="ck">const</span> <span class="cv">app</span> =
+                  <span class="cf">createApp</span>();
+                </div>
+                <div class="cl">
+                  <span class="ck">import</span> { <span class="cv">ref</span> }
+                  <span class="ck">from</span> <span class="cs">'vue'</span>;
+                </div>
+                <div class="cl"></div>
+                <div class="cl"><span class="ck">export default</span> {</div>
+                <div class="cl"><span class="cf">setup</span>() {</div>
+                <div class="cl">
+                  <span class="ck">const</span> <span class="cv">n</span> =
+                  <span class="cf">ref</span>(<span class="cn">0</span>);
+                </div>
+                <div class="cl">
+                  <span class="ck">return</span> { <span class="cv">n</span> };
+                </div>
+                <div class="cl">}</div>
+                <div class="cl">}</div>
+              </div>
+            </div>
+
+            <!-- Window: Browser -->
+            <div class="demo__win" id="win-browser" data-window="browser">
+              <div class="demo__win-bar">
+                <div class="demo__win-dots"><i></i><i></i><i></i></div>
+                <span class="demo__win-name">Browser</span>
+              </div>
+              <div class="demo__win-body demo__win-body--browser">
+                <div class="fake-url"><span>localhost:3000</span></div>
+                <div class="fake-page">
+                  <div class="fake-block fake-block--heading"></div>
+                  <div class="fake-block fake-block--text"></div>
+                  <div
+                    class="fake-block fake-block--text fake-block--short"
+                  ></div>
+                  <div class="fake-block fake-block--img"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dock -->
+            <div class="demo__dock">
+              <div class="demo__dock-item"></div>
+              <div class="demo__dock-item"></div>
+              <div class="demo__dock-item demo__dock-item--accent"></div>
+              <div class="demo__dock-item"></div>
+            </div>
           </div>
 
-          <!-- Window: VS Code -->
-          <div class="demo__win demo__win--active" id="win-vscode" data-window="vscode">
-            <div class="demo__win-bar">
-              <div class="demo__win-dots"><i></i><i></i><i></i></div>
-              <span class="demo__win-name">VS Code</span>
-            </div>
-            <div class="demo__win-body demo__win-body--code">
-              <div class="cl"><span class="ck">const</span> <span class="cv">app</span> = <span class="cf">createApp</span>();</div>
-              <div class="cl"><span class="ck">import</span> { <span class="cv">ref</span> } <span class="ck">from</span> <span class="cs">'vue'</span>;</div>
-              <div class="cl"></div>
-              <div class="cl"><span class="ck">export default</span> {</div>
-              <div class="cl">  <span class="cf">setup</span>() {</div>
-              <div class="cl">    <span class="ck">const</span> <span class="cv">n</span> = <span class="cf">ref</span>(<span class="cn">0</span>);</div>
-              <div class="cl">    <span class="ck">return</span> { <span class="cv">n</span> };</div>
-              <div class="cl">  }</div>
-              <div class="cl">}</div>
-            </div>
+          <!-- Keystroke overlay -->
+          <div class="demo__keystroke" id="demoKeystroke">
+            <kbd>⌘</kbd><kbd>⌥</kbd
+            ><kbd class="demo__keystroke-dir" id="keystrokeDir">→</kbd>
           </div>
+          <!-- Focus badge -->
+          <div
+            class="demo__focus-badge"
+            id="focusBadge"
+            data-i18n="howItWorks.focused"
+          >
+            Focused
+          </div>
+        </div>
 
-          <!-- Window: Browser -->
-          <div class="demo__win" id="win-browser" data-window="browser">
-            <div class="demo__win-bar">
-              <div class="demo__win-dots"><i></i><i></i><i></i></div>
-              <span class="demo__win-name">Browser</span>
+        <!-- Algorithm steps — illustrated -->
+        <div class="algo reveal">
+          <h3 class="algo__title" data-i18n="howItWorks.algo.title">
+            Smart Selection Algorithm
+          </h3>
+          <div class="algo__steps">
+            <!-- Step 1: Filter occluded -->
+            <div class="algo__step">
+              <div class="algo__illust">
+                <svg viewBox="0 0 240 110" fill="none">
+                  <!-- Window B (front, visible) -->
+                  <rect
+                    x="18"
+                    y="14"
+                    width="78"
+                    height="48"
+                    rx="4"
+                    fill="#1a1a2a"
+                    stroke="#2dd4a8"
+                    stroke-width="1"
+                  />
+                  <rect
+                    x="19"
+                    y="15"
+                    width="76"
+                    height="11"
+                    rx="3"
+                    fill="#252538"
+                  />
+                  <circle cx="26" cy="20.5" r="2" fill="#f87171" />
+                  <circle cx="32" cy="20.5" r="2" fill="#fbbf24" />
+                  <circle cx="38" cy="20.5" r="2" fill="#4ade80" />
+                  <text
+                    x="57"
+                    y="46"
+                    font-size="10"
+                    fill="#c8c8d8"
+                    text-anchor="middle"
+                  >
+                    B
+                  </text>
+                  <!-- Window A (occluded, dashed red X) -->
+                  <rect
+                    x="42"
+                    y="28"
+                    width="55"
+                    height="40"
+                    rx="4"
+                    fill="none"
+                    stroke="#f87171"
+                    stroke-width="0.8"
+                    stroke-dasharray="3 2"
+                    opacity="0.45"
+                  />
+                  <line
+                    x1="50"
+                    y1="34"
+                    x2="89"
+                    y2="62"
+                    stroke="#f87171"
+                    stroke-width="1"
+                    opacity="0.45"
+                  />
+                  <line
+                    x1="89"
+                    y1="34"
+                    x2="50"
+                    y2="62"
+                    stroke="#f87171"
+                    stroke-width="1"
+                    opacity="0.45"
+                  />
+                  <!-- Window C (right, visible) -->
+                  <rect
+                    x="140"
+                    y="18"
+                    width="78"
+                    height="48"
+                    rx="4"
+                    fill="#1a1a2a"
+                    stroke="#2dd4a8"
+                    stroke-width="1"
+                  />
+                  <rect
+                    x="141"
+                    y="19"
+                    width="76"
+                    height="11"
+                    rx="3"
+                    fill="#252538"
+                  />
+                  <circle cx="148" cy="24.5" r="2" fill="#f87171" />
+                  <circle cx="154" cy="24.5" r="2" fill="#fbbf24" />
+                  <circle cx="160" cy="24.5" r="2" fill="#4ade80" />
+                  <text
+                    x="179"
+                    y="50"
+                    font-size="10"
+                    fill="#c8c8d8"
+                    text-anchor="middle"
+                  >
+                    C
+                  </text>
+                  <!-- Labels -->
+                  <text
+                    x="57"
+                    y="80"
+                    font-size="10"
+                    fill="#2dd4a8"
+                    text-anchor="middle"
+                  >
+                    ✓
+                  </text>
+                  <text
+                    x="179"
+                    y="80"
+                    font-size="10"
+                    fill="#2dd4a8"
+                    text-anchor="middle"
+                  >
+                    ✓
+                  </text>
+                  <text
+                    x="120"
+                    y="102"
+                    font-size="8.5"
+                    fill="#f87171"
+                    text-anchor="middle"
+                    opacity="0.75"
+                    data-i18n="algo.diagram.occluded"
+                  >
+                    ✗ occluded
+                  </text>
+                </svg>
+              </div>
+              <div class="algo__content">
+                <span class="algo__num">01</span>
+                <p data-i18n="howItWorks.algo.step1">
+                  Filter out completely occluded windows
+                </p>
+              </div>
             </div>
-            <div class="demo__win-body demo__win-body--browser">
-              <div class="fake-url"><span>localhost:3000</span></div>
-              <div class="fake-page">
-                <div class="fake-block fake-block--heading"></div>
-                <div class="fake-block fake-block--text"></div>
-                <div class="fake-block fake-block--text fake-block--short"></div>
-                <div class="fake-block fake-block--img"></div>
+
+            <!-- Step 2: Direction & axis overlap -->
+            <div class="algo__step">
+              <div class="algo__illust">
+                <svg viewBox="0 0 240 110" fill="none">
+                  <!-- Current window -->
+                  <rect
+                    x="10"
+                    y="28"
+                    width="58"
+                    height="44"
+                    rx="4"
+                    fill="#1a1a2a"
+                    stroke="#2dd4a8"
+                    stroke-width="1.2"
+                  />
+                  <text
+                    x="39"
+                    y="54"
+                    font-size="8.5"
+                    fill="#8888a0"
+                    text-anchor="middle"
+                    data-i18n="algo.diagram.current"
+                  >
+                    current
+                  </text>
+                  <!-- Y-axis overlap dashed lines -->
+                  <line
+                    x1="68"
+                    y1="28"
+                    x2="230"
+                    y2="28"
+                    stroke="#2dd4a8"
+                    stroke-width="0.5"
+                    stroke-dasharray="3 3"
+                    opacity="0.35"
+                  />
+                  <line
+                    x1="68"
+                    y1="72"
+                    x2="230"
+                    y2="72"
+                    stroke="#2dd4a8"
+                    stroke-width="0.5"
+                    stroke-dasharray="3 3"
+                    opacity="0.35"
+                  />
+                  <text
+                    x="190"
+                    y="22"
+                    font-size="7"
+                    fill="#2dd4a8"
+                    text-anchor="middle"
+                    opacity="0.6"
+                    data-i18n="algo.diagram.yOverlap"
+                  >
+                    Y-axis overlap range
+                  </text>
+                  <!-- Direction arrow -->
+                  <line
+                    x1="72"
+                    y1="50"
+                    x2="108"
+                    y2="50"
+                    stroke="#2dd4a8"
+                    stroke-width="1.5"
+                  />
+                  <polygon points="108,46 118,50 108,54" fill="#2dd4a8" />
+                  <!-- Candidate D (in Y range — green ✓) -->
+                  <rect
+                    x="135"
+                    y="34"
+                    width="48"
+                    height="30"
+                    rx="3"
+                    fill="#1a1a2a"
+                    stroke="#2dd4a8"
+                    stroke-width="1"
+                  />
+                  <text
+                    x="159"
+                    y="53"
+                    font-size="10"
+                    fill="#2dd4a8"
+                    text-anchor="middle"
+                  >
+                    D ✓
+                  </text>
+                  <!-- Candidate E (outside Y range — red ✗) -->
+                  <rect
+                    x="145"
+                    y="82"
+                    width="48"
+                    height="22"
+                    rx="3"
+                    fill="none"
+                    stroke="#f87171"
+                    stroke-width="0.8"
+                    opacity="0.45"
+                  />
+                  <text
+                    x="169"
+                    y="97"
+                    font-size="10"
+                    fill="#f87171"
+                    text-anchor="middle"
+                    opacity="0.6"
+                  >
+                    E ✗
+                  </text>
+                </svg>
+              </div>
+              <div class="algo__content">
+                <span class="algo__num">02</span>
+                <p data-i18n="howItWorks.algo.step2">
+                  Check direction & axis overlap
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 3: Group by overlap priority -->
+            <div class="algo__step">
+              <div class="algo__illust">
+                <svg viewBox="0 0 240 110" fill="none">
+                  <!-- Tier 1: Overlapping (brightest) -->
+                  <rect
+                    x="8"
+                    y="6"
+                    width="200"
+                    height="28"
+                    rx="4"
+                    fill="rgba(45,212,168,0.06)"
+                    stroke="rgba(45,212,168,0.2)"
+                  />
+                  <text
+                    x="16"
+                    y="24"
+                    font-size="9"
+                    fill="#2dd4a8"
+                    font-weight="500"
+                  >
+                    1st
+                  </text>
+                  <rect
+                    x="50"
+                    y="12"
+                    width="26"
+                    height="16"
+                    rx="2"
+                    fill="#1a1a2a"
+                    stroke="#2dd4a8"
+                    stroke-width="0.8"
+                  />
+                  <rect
+                    x="68"
+                    y="12"
+                    width="26"
+                    height="16"
+                    rx="2"
+                    fill="#1a1a2a"
+                    stroke="#2dd4a8"
+                    stroke-width="0.8"
+                  />
+                  <text
+                    x="148"
+                    y="24"
+                    font-size="7.5"
+                    fill="#8888a0"
+                    data-i18n="algo.diagram.overlapping"
+                  >
+                    overlapping
+                  </text>
+                  <!-- Tier 2: Non-overlapping -->
+                  <rect
+                    x="8"
+                    y="40"
+                    width="200"
+                    height="28"
+                    rx="4"
+                    fill="rgba(255,255,255,0.02)"
+                    stroke="rgba(255,255,255,0.06)"
+                  />
+                  <text x="16" y="58" font-size="9" fill="#8888a0">2nd</text>
+                  <rect
+                    x="50"
+                    y="46"
+                    width="26"
+                    height="16"
+                    rx="2"
+                    fill="#1a1a2a"
+                    stroke="#3a3a52"
+                    stroke-width="0.8"
+                  />
+                  <text
+                    x="148"
+                    y="58"
+                    font-size="7.5"
+                    fill="#5a5a72"
+                    data-i18n="algo.diagram.nonOverlapping"
+                  >
+                    non-overlapping
+                  </text>
+                  <!-- Tier 3: Fullscreen -->
+                  <rect
+                    x="8"
+                    y="74"
+                    width="200"
+                    height="28"
+                    rx="4"
+                    fill="rgba(255,255,255,0.01)"
+                    stroke="rgba(255,255,255,0.04)"
+                  />
+                  <text x="16" y="92" font-size="9" fill="#5a5a72">3rd</text>
+                  <rect
+                    x="50"
+                    y="80"
+                    width="26"
+                    height="16"
+                    rx="2"
+                    fill="#111119"
+                    stroke="#252538"
+                    stroke-width="0.8"
+                    opacity="0.6"
+                  />
+                  <text
+                    x="148"
+                    y="92"
+                    font-size="7.5"
+                    fill="#3a3a52"
+                    data-i18n="algo.diagram.fullscreen"
+                  >
+                    fullscreen
+                  </text>
+                  <!-- Priority arrow -->
+                  <line
+                    x1="220"
+                    y1="14"
+                    x2="220"
+                    y2="96"
+                    stroke="#3a3a52"
+                    stroke-width="0.8"
+                    stroke-dasharray="2 2"
+                  />
+                  <polygon
+                    points="217,14 223,14 220,8"
+                    fill="#2dd4a8"
+                    opacity="0.5"
+                  />
+                  <text
+                    x="220"
+                    y="108"
+                    font-size="6.5"
+                    fill="#5a5a72"
+                    text-anchor="middle"
+                    data-i18n="algo.diagram.priority"
+                  >
+                    priority
+                  </text>
+                </svg>
+              </div>
+              <div class="algo__content">
+                <span class="algo__num">03</span>
+                <p data-i18n="howItWorks.algo.step3">
+                  Group candidates by overlap priority
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 4: Score -->
+            <div class="algo__step">
+              <div class="algo__illust">
+                <svg viewBox="0 0 240 110" fill="none">
+                  <!-- Formula -->
+                  <text
+                    x="120"
+                    y="14"
+                    font-size="7.5"
+                    fill="#5a5a72"
+                    text-anchor="middle"
+                    font-style="italic"
+                  >
+                    score = visible × 500 − dist − z × 50
+                  </text>
+                  <!-- Window A (high score) -->
+                  <rect
+                    x="15"
+                    y="24"
+                    width="95"
+                    height="40"
+                    rx="4"
+                    fill="#1a1a2a"
+                    stroke="#2dd4a8"
+                    stroke-width="1"
+                  />
+                  <text
+                    x="62"
+                    y="40"
+                    font-size="7.5"
+                    fill="#8888a0"
+                    text-anchor="middle"
+                  >
+                    visible:90% dist:100 z:1
+                  </text>
+                  <text
+                    x="62"
+                    y="54"
+                    font-size="8"
+                    fill="#c8c8d8"
+                    text-anchor="middle"
+                  >
+                    A
+                  </text>
+                  <!-- Score bar A -->
+                  <rect
+                    x="15"
+                    y="70"
+                    width="95"
+                    height="6"
+                    rx="3"
+                    fill="#111119"
+                  />
+                  <rect
+                    x="15"
+                    y="70"
+                    width="76"
+                    height="6"
+                    rx="3"
+                    fill="#2dd4a8"
+                    opacity="0.6"
+                  />
+                  <text
+                    x="62"
+                    y="90"
+                    font-size="10"
+                    fill="#2dd4a8"
+                    text-anchor="middle"
+                    font-weight="500"
+                  >
+                    300 ✓
+                  </text>
+                  <!-- Window B (low score) -->
+                  <rect
+                    x="130"
+                    y="24"
+                    width="95"
+                    height="40"
+                    rx="4"
+                    fill="#1a1a2a"
+                    stroke="#3a3a52"
+                    stroke-width="1"
+                  />
+                  <text
+                    x="177"
+                    y="40"
+                    font-size="7.5"
+                    fill="#5a5a72"
+                    text-anchor="middle"
+                  >
+                    visible:40% dist:200 z:3
+                  </text>
+                  <text
+                    x="177"
+                    y="54"
+                    font-size="8"
+                    fill="#8888a0"
+                    text-anchor="middle"
+                  >
+                    B
+                  </text>
+                  <!-- Score bar B -->
+                  <rect
+                    x="130"
+                    y="70"
+                    width="95"
+                    height="6"
+                    rx="3"
+                    fill="#111119"
+                  />
+                  <rect
+                    x="130"
+                    y="70"
+                    width="18"
+                    height="6"
+                    rx="3"
+                    fill="#3a3a52"
+                    opacity="0.4"
+                  />
+                  <text
+                    x="177"
+                    y="90"
+                    font-size="10"
+                    fill="#5a5a72"
+                    text-anchor="middle"
+                  >
+                    −150
+                  </text>
+                  <!-- Label -->
+                  <text
+                    x="120"
+                    y="106"
+                    font-size="7.5"
+                    fill="#2dd4a8"
+                    text-anchor="middle"
+                    data-i18n="algo.diagram.highestWins"
+                  >
+                    ↑ highest score wins
+                  </text>
+                </svg>
+              </div>
+              <div class="algo__content">
+                <span class="algo__num">04</span>
+                <p data-i18n="howItWorks.algo.step4">
+                  Score by visibility, distance, z-order
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 5: Fallback -->
+            <div class="algo__step">
+              <div class="algo__illust">
+                <svg viewBox="0 0 240 110" fill="none">
+                  <!-- Current window (center) -->
+                  <rect
+                    x="90"
+                    y="30"
+                    width="55"
+                    height="40"
+                    rx="4"
+                    fill="#1a1a2a"
+                    stroke="#8888a0"
+                    stroke-width="1"
+                  />
+                  <text
+                    x="117"
+                    y="54"
+                    font-size="8.5"
+                    fill="#8888a0"
+                    text-anchor="middle"
+                    data-i18n="algo.diagram.current"
+                  >
+                    current
+                  </text>
+                  <!-- Right arrow: nothing found -->
+                  <line
+                    x1="150"
+                    y1="50"
+                    x2="200"
+                    y2="50"
+                    stroke="#f87171"
+                    stroke-width="1"
+                    opacity="0.4"
+                  />
+                  <polygon
+                    points="200,47 208,50 200,53"
+                    fill="#f87171"
+                    opacity="0.4"
+                  />
+                  <text
+                    x="215"
+                    y="54"
+                    font-size="12"
+                    fill="#f87171"
+                    opacity="0.5"
+                  >
+                    ✗
+                  </text>
+                  <text
+                    x="180"
+                    y="40"
+                    font-size="7"
+                    fill="#5a5a72"
+                    text-anchor="middle"
+                    data-i18n="algo.diagram.targetDir"
+                  >
+                    target direction
+                  </text>
+                  <!-- Left arrow: fallback finds target -->
+                  <line
+                    x1="85"
+                    y1="50"
+                    x2="48"
+                    y2="50"
+                    stroke="#2dd4a8"
+                    stroke-width="1.5"
+                  />
+                  <polygon points="48,46.5 38,50 48,53.5" fill="#2dd4a8" />
+                  <!-- Target window (left) -->
+                  <rect
+                    x="5"
+                    y="35"
+                    width="33"
+                    height="28"
+                    rx="3"
+                    fill="#1a1a2a"
+                    stroke="#2dd4a8"
+                    stroke-width="1.2"
+                  />
+                  <text
+                    x="21"
+                    y="53"
+                    font-size="10"
+                    fill="#2dd4a8"
+                    text-anchor="middle"
+                  >
+                    ✓
+                  </text>
+                  <!-- Labels -->
+                  <text
+                    x="55"
+                    y="88"
+                    font-size="7.5"
+                    fill="#2dd4a8"
+                    text-anchor="middle"
+                    data-i18n="algo.diagram.fallback"
+                  >
+                    ← fallback search
+                  </text>
+                  <text
+                    x="180"
+                    y="88"
+                    font-size="7.5"
+                    fill="#f87171"
+                    text-anchor="middle"
+                    opacity="0.6"
+                    data-i18n="algo.diagram.noResult"
+                  >
+                    → nothing found
+                  </text>
+                </svg>
+              </div>
+              <div class="algo__content">
+                <span class="algo__num">05</span>
+                <p data-i18n="howItWorks.algo.step5">
+                  Fallback: search the opposite direction
+                </p>
               </div>
             </div>
           </div>
-
-          <!-- Dock -->
-          <div class="demo__dock">
-            <div class="demo__dock-item"></div>
-            <div class="demo__dock-item"></div>
-            <div class="demo__dock-item demo__dock-item--accent"></div>
-            <div class="demo__dock-item"></div>
-          </div>
-        </div>
-
-        <!-- Keystroke overlay -->
-        <div class="demo__keystroke" id="demoKeystroke">
-          <kbd>⌘</kbd><kbd>⌥</kbd><kbd class="demo__keystroke-dir" id="keystrokeDir">→</kbd>
-        </div>
-        <!-- Focus badge -->
-        <div class="demo__focus-badge" id="focusBadge" data-i18n="howItWorks.focused">Focused</div>
-      </div>
-
-      <!-- Algorithm steps — illustrated -->
-      <div class="algo reveal">
-        <h3 class="algo__title" data-i18n="howItWorks.algo.title">Smart Selection Algorithm</h3>
-        <div class="algo__steps">
-
-          <!-- Step 1: Filter occluded -->
-          <div class="algo__step">
-            <div class="algo__illust">
-              <svg viewBox="0 0 240 110" fill="none">
-                <!-- Window B (front, visible) -->
-                <rect x="18" y="14" width="78" height="48" rx="4" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="1"/>
-                <rect x="19" y="15" width="76" height="11" rx="3" fill="#252538"/>
-                <circle cx="26" cy="20.5" r="2" fill="#f87171"/><circle cx="32" cy="20.5" r="2" fill="#fbbf24"/><circle cx="38" cy="20.5" r="2" fill="#4ade80"/>
-                <text x="57" y="46" font-size="10" fill="#c8c8d8" text-anchor="middle">B</text>
-                <!-- Window A (occluded, dashed red X) -->
-                <rect x="42" y="28" width="55" height="40" rx="4" fill="none" stroke="#f87171" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.45"/>
-                <line x1="50" y1="34" x2="89" y2="62" stroke="#f87171" stroke-width="1" opacity="0.45"/>
-                <line x1="89" y1="34" x2="50" y2="62" stroke="#f87171" stroke-width="1" opacity="0.45"/>
-                <!-- Window C (right, visible) -->
-                <rect x="140" y="18" width="78" height="48" rx="4" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="1"/>
-                <rect x="141" y="19" width="76" height="11" rx="3" fill="#252538"/>
-                <circle cx="148" cy="24.5" r="2" fill="#f87171"/><circle cx="154" cy="24.5" r="2" fill="#fbbf24"/><circle cx="160" cy="24.5" r="2" fill="#4ade80"/>
-                <text x="179" y="50" font-size="10" fill="#c8c8d8" text-anchor="middle">C</text>
-                <!-- Labels -->
-                <text x="57" y="80" font-size="10" fill="#2dd4a8" text-anchor="middle">✓</text>
-                <text x="179" y="80" font-size="10" fill="#2dd4a8" text-anchor="middle">✓</text>
-                <text x="120" y="102" font-size="8.5" fill="#f87171" text-anchor="middle" opacity="0.75" data-i18n="algo.diagram.occluded">✗ occluded</text>
-              </svg>
-            </div>
-            <div class="algo__content">
-              <span class="algo__num">01</span>
-              <p data-i18n="howItWorks.algo.step1">Filter out completely occluded windows</p>
-            </div>
-          </div>
-
-          <!-- Step 2: Direction & axis overlap -->
-          <div class="algo__step">
-            <div class="algo__illust">
-              <svg viewBox="0 0 240 110" fill="none">
-                <!-- Current window -->
-                <rect x="10" y="28" width="58" height="44" rx="4" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="1.2"/>
-                <text x="39" y="54" font-size="8.5" fill="#8888a0" text-anchor="middle" data-i18n="algo.diagram.current">current</text>
-                <!-- Y-axis overlap dashed lines -->
-                <line x1="68" y1="28" x2="230" y2="28" stroke="#2dd4a8" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.35"/>
-                <line x1="68" y1="72" x2="230" y2="72" stroke="#2dd4a8" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.35"/>
-                <text x="190" y="22" font-size="7" fill="#2dd4a8" text-anchor="middle" opacity="0.6" data-i18n="algo.diagram.yOverlap">Y-axis overlap range</text>
-                <!-- Direction arrow -->
-                <line x1="72" y1="50" x2="108" y2="50" stroke="#2dd4a8" stroke-width="1.5"/>
-                <polygon points="108,46 118,50 108,54" fill="#2dd4a8"/>
-                <!-- Candidate D (in Y range — green ✓) -->
-                <rect x="135" y="34" width="48" height="30" rx="3" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="1"/>
-                <text x="159" y="53" font-size="10" fill="#2dd4a8" text-anchor="middle">D ✓</text>
-                <!-- Candidate E (outside Y range — red ✗) -->
-                <rect x="145" y="82" width="48" height="22" rx="3" fill="none" stroke="#f87171" stroke-width="0.8" opacity="0.45"/>
-                <text x="169" y="97" font-size="10" fill="#f87171" text-anchor="middle" opacity="0.6">E ✗</text>
-              </svg>
-            </div>
-            <div class="algo__content">
-              <span class="algo__num">02</span>
-              <p data-i18n="howItWorks.algo.step2">Check direction & axis overlap</p>
-            </div>
-          </div>
-
-          <!-- Step 3: Group by overlap priority -->
-          <div class="algo__step">
-            <div class="algo__illust">
-              <svg viewBox="0 0 240 110" fill="none">
-                <!-- Tier 1: Overlapping (brightest) -->
-                <rect x="8" y="6" width="200" height="28" rx="4" fill="rgba(45,212,168,0.06)" stroke="rgba(45,212,168,0.2)"/>
-                <text x="16" y="24" font-size="9" fill="#2dd4a8" font-weight="500">1st</text>
-                <rect x="50" y="12" width="26" height="16" rx="2" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="0.8"/>
-                <rect x="68" y="12" width="26" height="16" rx="2" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="0.8"/>
-                <text x="148" y="24" font-size="7.5" fill="#8888a0" data-i18n="algo.diagram.overlapping">overlapping</text>
-                <!-- Tier 2: Non-overlapping -->
-                <rect x="8" y="40" width="200" height="28" rx="4" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)"/>
-                <text x="16" y="58" font-size="9" fill="#8888a0">2nd</text>
-                <rect x="50" y="46" width="26" height="16" rx="2" fill="#1a1a2a" stroke="#3a3a52" stroke-width="0.8"/>
-                <text x="148" y="58" font-size="7.5" fill="#5a5a72" data-i18n="algo.diagram.nonOverlapping">non-overlapping</text>
-                <!-- Tier 3: Fullscreen -->
-                <rect x="8" y="74" width="200" height="28" rx="4" fill="rgba(255,255,255,0.01)" stroke="rgba(255,255,255,0.04)"/>
-                <text x="16" y="92" font-size="9" fill="#5a5a72">3rd</text>
-                <rect x="50" y="80" width="26" height="16" rx="2" fill="#111119" stroke="#252538" stroke-width="0.8" opacity="0.6"/>
-                <text x="148" y="92" font-size="7.5" fill="#3a3a52" data-i18n="algo.diagram.fullscreen">fullscreen</text>
-                <!-- Priority arrow -->
-                <line x1="220" y1="14" x2="220" y2="96" stroke="#3a3a52" stroke-width="0.8" stroke-dasharray="2 2"/>
-                <polygon points="217,14 223,14 220,8" fill="#2dd4a8" opacity="0.5"/>
-                <text x="220" y="108" font-size="6.5" fill="#5a5a72" text-anchor="middle" data-i18n="algo.diagram.priority">priority</text>
-              </svg>
-            </div>
-            <div class="algo__content">
-              <span class="algo__num">03</span>
-              <p data-i18n="howItWorks.algo.step3">Group candidates by overlap priority</p>
-            </div>
-          </div>
-
-          <!-- Step 4: Score -->
-          <div class="algo__step">
-            <div class="algo__illust">
-              <svg viewBox="0 0 240 110" fill="none">
-                <!-- Formula -->
-                <text x="120" y="14" font-size="7.5" fill="#5a5a72" text-anchor="middle" font-style="italic">score = visible × 500 − dist − z × 50</text>
-                <!-- Window A (high score) -->
-                <rect x="15" y="24" width="95" height="40" rx="4" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="1"/>
-                <text x="62" y="40" font-size="7.5" fill="#8888a0" text-anchor="middle">visible:90% dist:100 z:1</text>
-                <text x="62" y="54" font-size="8" fill="#c8c8d8" text-anchor="middle">A</text>
-                <!-- Score bar A -->
-                <rect x="15" y="70" width="95" height="6" rx="3" fill="#111119"/>
-                <rect x="15" y="70" width="76" height="6" rx="3" fill="#2dd4a8" opacity="0.6"/>
-                <text x="62" y="90" font-size="10" fill="#2dd4a8" text-anchor="middle" font-weight="500">300 ✓</text>
-                <!-- Window B (low score) -->
-                <rect x="130" y="24" width="95" height="40" rx="4" fill="#1a1a2a" stroke="#3a3a52" stroke-width="1"/>
-                <text x="177" y="40" font-size="7.5" fill="#5a5a72" text-anchor="middle">visible:40% dist:200 z:3</text>
-                <text x="177" y="54" font-size="8" fill="#8888a0" text-anchor="middle">B</text>
-                <!-- Score bar B -->
-                <rect x="130" y="70" width="95" height="6" rx="3" fill="#111119"/>
-                <rect x="130" y="70" width="18" height="6" rx="3" fill="#3a3a52" opacity="0.4"/>
-                <text x="177" y="90" font-size="10" fill="#5a5a72" text-anchor="middle">−150</text>
-                <!-- Label -->
-                <text x="120" y="106" font-size="7.5" fill="#2dd4a8" text-anchor="middle" data-i18n="algo.diagram.highestWins">↑ highest score wins</text>
-              </svg>
-            </div>
-            <div class="algo__content">
-              <span class="algo__num">04</span>
-              <p data-i18n="howItWorks.algo.step4">Score by visibility, distance, z-order</p>
-            </div>
-          </div>
-
-          <!-- Step 5: Fallback -->
-          <div class="algo__step">
-            <div class="algo__illust">
-              <svg viewBox="0 0 240 110" fill="none">
-                <!-- Current window (center) -->
-                <rect x="90" y="30" width="55" height="40" rx="4" fill="#1a1a2a" stroke="#8888a0" stroke-width="1"/>
-                <text x="117" y="54" font-size="8.5" fill="#8888a0" text-anchor="middle" data-i18n="algo.diagram.current">current</text>
-                <!-- Right arrow: nothing found -->
-                <line x1="150" y1="50" x2="200" y2="50" stroke="#f87171" stroke-width="1" opacity="0.4"/>
-                <polygon points="200,47 208,50 200,53" fill="#f87171" opacity="0.4"/>
-                <text x="215" y="54" font-size="12" fill="#f87171" opacity="0.5">✗</text>
-                <text x="180" y="40" font-size="7" fill="#5a5a72" text-anchor="middle" data-i18n="algo.diagram.targetDir">target direction</text>
-                <!-- Left arrow: fallback finds target -->
-                <line x1="85" y1="50" x2="48" y2="50" stroke="#2dd4a8" stroke-width="1.5"/>
-                <polygon points="48,46.5 38,50 48,53.5" fill="#2dd4a8"/>
-                <!-- Target window (left) -->
-                <rect x="5" y="35" width="33" height="28" rx="3" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="1.2"/>
-                <text x="21" y="53" font-size="10" fill="#2dd4a8" text-anchor="middle">✓</text>
-                <!-- Labels -->
-                <text x="55" y="88" font-size="7.5" fill="#2dd4a8" text-anchor="middle" data-i18n="algo.diagram.fallback">← fallback search</text>
-                <text x="180" y="88" font-size="7.5" fill="#f87171" text-anchor="middle" opacity="0.6" data-i18n="algo.diagram.noResult">→ nothing found</text>
-              </svg>
-            </div>
-            <div class="algo__content">
-              <span class="algo__num">05</span>
-              <p data-i18n="howItWorks.algo.step5">Fallback: search the opposite direction</p>
-            </div>
-          </div>
-
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============ SHORTCUTS ============ -->
-  <section class="shortcuts" id="shortcuts">
-    <div class="container">
-      <span class="section-label reveal" data-i18n="shortcuts.label">— Default Shortcuts</span>
-      <h2 class="section-title reveal" data-i18n="shortcuts.title">Ready out of the box</h2>
-      <div class="shortcuts__grid reveal">
-        <div class="shortcut-card">
-          <div class="shortcut-card__keys"><kbd>⌘</kbd><kbd>⌥</kbd><kbd>↑</kbd></div>
-          <span class="shortcut-card__label" data-i18n="shortcuts.up">Focus Up</span>
+    <!-- ============ SHORTCUTS ============ -->
+    <section class="shortcuts" id="shortcuts">
+      <div class="container">
+        <span class="section-label reveal" data-i18n="shortcuts.label"
+          >— Default Shortcuts</span
+        >
+        <h2 class="section-title reveal" data-i18n="shortcuts.title">
+          Ready out of the box
+        </h2>
+        <div class="shortcuts__grid reveal">
+          <div class="shortcut-card">
+            <div class="shortcut-card__keys">
+              <kbd>⌘</kbd><kbd>⌥</kbd><kbd>↑</kbd>
+            </div>
+            <span class="shortcut-card__label" data-i18n="shortcuts.up"
+              >Focus Up</span
+            >
+          </div>
+          <div class="shortcut-card">
+            <div class="shortcut-card__keys">
+              <kbd>⌘</kbd><kbd>⌥</kbd><kbd>↓</kbd>
+            </div>
+            <span class="shortcut-card__label" data-i18n="shortcuts.down"
+              >Focus Down</span
+            >
+          </div>
+          <div class="shortcut-card">
+            <div class="shortcut-card__keys">
+              <kbd>⌘</kbd><kbd>⌥</kbd><kbd>←</kbd>
+            </div>
+            <span class="shortcut-card__label" data-i18n="shortcuts.left"
+              >Focus Left</span
+            >
+          </div>
+          <div class="shortcut-card">
+            <div class="shortcut-card__keys">
+              <kbd>⌘</kbd><kbd>⌥</kbd><kbd>→</kbd>
+            </div>
+            <span class="shortcut-card__label" data-i18n="shortcuts.right"
+              >Focus Right</span
+            >
+          </div>
         </div>
-        <div class="shortcut-card">
-          <div class="shortcut-card__keys"><kbd>⌘</kbd><kbd>⌥</kbd><kbd>↓</kbd></div>
-          <span class="shortcut-card__label" data-i18n="shortcuts.down">Focus Down</span>
-        </div>
-        <div class="shortcut-card">
-          <div class="shortcut-card__keys"><kbd>⌘</kbd><kbd>⌥</kbd><kbd>←</kbd></div>
-          <span class="shortcut-card__label" data-i18n="shortcuts.left">Focus Left</span>
-        </div>
-        <div class="shortcut-card">
-          <div class="shortcut-card__keys"><kbd>⌘</kbd><kbd>⌥</kbd><kbd>→</kbd></div>
-          <span class="shortcut-card__label" data-i18n="shortcuts.right">Focus Right</span>
-        </div>
+        <p class="shortcuts__note reveal" data-i18n="shortcuts.note">
+          All shortcuts are fully customizable in settings.
+        </p>
       </div>
-      <p class="shortcuts__note reveal" data-i18n="shortcuts.note">All shortcuts are fully customizable in settings.</p>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============ QUICK START ============ -->
-  <section class="quickstart" id="quickstart">
-    <div class="container">
-      <span class="section-label reveal" data-i18n="quickstart.label">— Get Started</span>
-      <h2 class="section-title reveal" data-i18n="quickstart.title">Up and running in minutes</h2>
-      <div class="quickstart__steps">
-
-        <div class="step reveal">
-          <div class="step__num">01</div>
-          <div class="step__body">
-            <h3 class="step__title" data-i18n="quickstart.step1.title">Download</h3>
-            <p class="step__desc" data-i18n="quickstart.step1.desc">Grab the latest .dmg from GitHub Releases, or build from source.</p>
-            <div class="code-block">
-              <span class="code-block__label" data-i18n="quickstart.build">Or build from source:</span>
-              <pre><code>git clone &lt;repo-url&gt; &amp;&amp; cd visual-focusing
+    <!-- ============ QUICK START ============ -->
+    <section class="quickstart" id="quickstart">
+      <div class="container">
+        <span class="section-label reveal" data-i18n="quickstart.label"
+          >— Get Started</span
+        >
+        <h2 class="section-title reveal" data-i18n="quickstart.title">
+          Up and running in minutes
+        </h2>
+        <div class="quickstart__steps">
+          <div class="step reveal">
+            <div class="step__num">01</div>
+            <div class="step__body">
+              <h3 class="step__title" data-i18n="quickstart.step1.title">
+                Download
+              </h3>
+              <p class="step__desc" data-i18n="quickstart.step1.desc">
+                Grab the latest .dmg from GitHub Releases, or build from source.
+              </p>
+              <div class="code-block">
+                <span class="code-block__label" data-i18n="quickstart.build"
+                  >Or build from source:</span
+                >
+                <pre><code>git clone &lt;repo-url&gt; &amp;&amp; cd visual-focusing
 npm install
 npm run build:all</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="step reveal">
+            <div class="step__num">02</div>
+            <div class="step__body">
+              <h3 class="step__title" data-i18n="quickstart.step2.title">
+                Install
+              </h3>
+              <p class="step__desc" data-i18n="quickstart.step2.desc">
+                Open the .dmg and drag Visual Focusing to Applications.
+              </p>
+              <div class="code-block">
+                <span class="code-block__label" data-i18n="quickstart.unblock"
+                  >If macOS blocks the app:</span
+                >
+                <pre><code>xattr -cr "/Applications/Visual Focusing.app"</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="step reveal">
+            <div class="step__num">03</div>
+            <div class="step__body">
+              <h3 class="step__title" data-i18n="quickstart.step3.title">
+                Grant Permission
+              </h3>
+              <p class="step__desc" data-i18n="quickstart.step3.desc">
+                Launch the app and grant Accessibility permission when prompted.
+              </p>
             </div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div class="step reveal">
-          <div class="step__num">02</div>
-          <div class="step__body">
-            <h3 class="step__title" data-i18n="quickstart.step2.title">Install</h3>
-            <p class="step__desc" data-i18n="quickstart.step2.desc">Open the .dmg and drag Visual Focusing to Applications.</p>
-            <div class="code-block">
-              <span class="code-block__label" data-i18n="quickstart.unblock">If macOS blocks the app:</span>
-              <pre><code>xattr -cr "/Applications/Visual Focusing.app"</code></pre>
-            </div>
-          </div>
+    <!-- ============ FOOTER ============ -->
+    <footer class="footer">
+      <div class="container footer__inner">
+        <div class="footer__brand">
+          <img src="assets/icon.png" alt="" width="20" height="20" />
+          <span>Visual Focusing</span>
         </div>
-
-        <div class="step reveal">
-          <div class="step__num">03</div>
-          <div class="step__body">
-            <h3 class="step__title" data-i18n="quickstart.step3.title">Grant Permission</h3>
-            <p class="step__desc" data-i18n="quickstart.step3.desc">Launch the app and grant Accessibility permission when prompted.</p>
-          </div>
+        <p class="footer__license" data-i18n="footer.license">
+          Released under MIT License
+        </p>
+        <div class="footer__links">
+          <a
+            href="https://github.com/wasichris/visual-focusing"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+          <a
+            href="https://github.com/wasichris/visual-focusing/issues"
+            target="_blank"
+            rel="noopener"
+            data-i18n="footer.issues"
+            >Issues</a
+          >
+          <a
+            href="https://github.com/wasichris/visual-focusing/releases"
+            target="_blank"
+            rel="noopener"
+            data-i18n="footer.releases"
+            >Releases</a
+          >
         </div>
-
       </div>
-    </div>
-  </section>
+    </footer>
 
-  <!-- ============ FOOTER ============ -->
-  <footer class="footer">
-    <div class="container footer__inner">
-      <div class="footer__brand">
-        <img src="assets/icon.png" alt="" width="20" height="20">
-        <span>Visual Focusing</span>
-      </div>
-      <p class="footer__license" data-i18n="footer.license">Released under MIT License</p>
-      <div class="footer__links">
-        <a href="https://github.com/user/visual-focusing" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://github.com/user/visual-focusing/issues" target="_blank" rel="noopener" data-i18n="footer.issues">Issues</a>
-        <a href="https://github.com/user/visual-focusing/releases" target="_blank" rel="noopener" data-i18n="footer.releases">Releases</a>
-      </div>
-    </div>
-  </footer>
-
-  <script src="js/main.js"></script>
-</body>
+    <script src="js/main.js"></script>
+  </body>
 </html>
