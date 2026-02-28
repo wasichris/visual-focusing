@@ -140,6 +140,36 @@ src/
 - **node-window-manager** — Native window enumeration & focus
 - **electron-store** — Persistent settings storage
 
+### Release
+
+This project uses [Semantic Versioning](https://semver.org/) and automated releases via GitHub Actions.
+
+**Version format:** `vMAJOR.MINOR.PATCH`
+
+| Bump    | When                                    | Example            |
+| ------- | --------------------------------------- | ------------------ |
+| `patch` | Bug fixes                               | v1.0.0 → v1.0.1   |
+| `minor` | New features, backward compatible       | v1.0.0 → v1.1.0   |
+| `major` | Breaking changes                        | v1.0.0 → v2.0.0   |
+
+**How to publish a new release:**
+
+```bash
+# 1. Update version (auto-updates package.json, creates git commit & tag)
+npm version patch   # or: minor / major
+
+# 2. Push to GitHub (triggers automated build & release)
+git push origin main --tags
+```
+
+GitHub Actions will automatically build the macOS app (arm64 + x64), create a GitHub Release, and attach the `.dmg` and `.zip` installers.
+
+> **First release only:** If no tags exist yet, create the initial tag manually:
+> ```bash
+> git tag v1.0.0
+> git push origin v1.0.0
+> ```
+
 ---
 
 ## 📄 License

@@ -140,6 +140,36 @@ src/
 - **node-window-manager** — 原生視窗列舉與聚焦
 - **electron-store** — 設定持久化儲存
 
+### 發布版本
+
+本專案採用[語意化版本](https://semver.org/lang/zh-TW/)，並透過 GitHub Actions 自動化發布。
+
+**版本格式：** `vMAJOR.MINOR.PATCH`
+
+| 升版類型 | 時機                       | 範例               |
+| -------- | -------------------------- | ------------------ |
+| `patch`  | Bug 修復                   | v1.0.0 → v1.0.1   |
+| `minor`  | 新功能，向後相容           | v1.0.0 → v1.1.0   |
+| `major`  | 重大變更，不向後相容       | v1.0.0 → v2.0.0   |
+
+**發布新版本的步驟：**
+
+```bash
+# 1. 更新版本號（自動修改 package.json、建立 git commit 與 tag）
+npm version patch   # 或：minor / major
+
+# 2. 推送到 GitHub（觸發自動建置與發布）
+git push origin main --tags
+```
+
+GitHub Actions 會自動建置 macOS 應用程式（arm64 + x64），建立 GitHub Release，並附上 `.dmg` 和 `.zip` 安裝檔。
+
+> **首次發布：** 若尚無任何 tag，請手動建立初始 tag：
+> ```bash
+> git tag v1.0.0
+> git push origin v1.0.0
+> ```
+
 ---
 
 ## 📄 授權
