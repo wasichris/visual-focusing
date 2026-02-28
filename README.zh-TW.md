@@ -1,8 +1,16 @@
 # 🎯 Visual Focusing
 
-**用鍵盤快捷鍵在視窗之間導航 — 讓你的桌面擁有空間導航能力。**
+<div align="center">
 
-🌐 [官方網站](https://wasichris.github.io/visual-focusing/) | [English](./README.md)
+![Visual Focusing](docs/assets/banner.svg)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![Platform: macOS](https://img.shields.io/badge/Platform-macOS-blue.svg)](#)
+[![GitHub Release](https://img.shields.io/github/v/release/wasichris/visual-focusing)](https://github.com/wasichris/visual-focusing/releases)
+
+🌐 [官方網站](https://wasichris.github.io/visual-focusing/) | 📦 [下載](https://github.com/wasichris/visual-focusing/releases) | [English](./README.md)
+
+</div>
 
 Visual Focusing 讓你透過自訂快捷鍵，快速切換到上下左右方向最近的視窗。不需要滑鼠，按下快捷鍵就能立即聚焦到最合適的視窗。
 
@@ -56,16 +64,9 @@ npm run build:all   # 輸出至 release/
 
 ## 🖥️ 運作原理
 
-```
-┌─────────┬─────────┐
-│  Slack  │         │
-├─────────┤ 瀏覽器   │
-│ VS Code │         │
-└─────────┴─────────┘
+![運作原理](docs/assets/concept.svg)
 
-在 VS Code 按 ⌘⌥→ → 切換到瀏覽器
-在 VS Code 按 ⌘⌥↑ → 切換到 Slack
-```
+在 VS Code 按 `⌘⌥→` → 切換到瀏覽器。在 VS Code 按 `⌘⌥↑` → 切換到 Slack。
 
 ### 智慧視窗選擇演算法
 

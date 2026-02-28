@@ -1,0 +1,83 @@
+<svg width="800" height="380" viewBox="0 0 800 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0a14"/>
+      <stop offset="100%" stop-color="#0e0e1a"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="380" rx="12" fill="url(#bg)"/>
+  <rect x="0.5" y="0.5" width="799" height="379" rx="12" fill="none" stroke="rgba(255,255,255,0.07)"/>
+
+  <!-- Menu bar -->
+  <rect x="50" y="24" width="700" height="20" rx="4" fill="rgba(255,255,255,0.03)"/>
+  <circle cx="68" cy="34" r="3.5" fill="rgba(255,255,255,0.12)"/>
+  <text x="84" y="38" font-family="'SF Mono', monospace" font-size="9" fill="rgba(255,255,255,0.18)">File  Edit  View</text>
+
+  <!-- ===== Window: Slack (top-left) ===== -->
+  <rect x="50" y="52" width="300" height="120" rx="8" fill="#14141f" stroke="#3a3a52"/>
+  <rect x="51" y="53" width="298" height="22" rx="7" fill="#1e1e2e"/>
+  <circle cx="66" cy="64" r="4" fill="#f87171"/><circle cx="78" cy="64" r="4" fill="#fbbf24"/><circle cx="90" cy="64" r="4" fill="#4ade80"/>
+  <text x="200" y="68" text-anchor="middle" font-family="'SF Mono', monospace" font-size="11" fill="#8888a0">Slack</text>
+  <!-- Chat lines -->
+  <rect x="66" y="86" width="10" height="10" rx="2" fill="#252538"/>
+  <rect x="82" y="86" width="120" height="10" rx="3" fill="rgba(255,255,255,0.04)"/>
+  <rect x="66" y="104" width="10" height="10" rx="2" fill="#252538"/>
+  <rect x="82" y="104" width="170" height="10" rx="3" fill="rgba(255,255,255,0.04)"/>
+  <rect x="66" y="122" width="10" height="10" rx="2" fill="#252538"/>
+  <rect x="82" y="122" width="90" height="10" rx="3" fill="rgba(255,255,255,0.04)"/>
+
+  <!-- ===== Window: VS Code (bottom-left, ACTIVE) ===== -->
+  <rect x="50" y="182" width="300" height="160" rx="8" fill="#14141f" stroke="#2dd4a8" stroke-width="1.5"/>
+  <!-- Glow effect -->
+  <rect x="46" y="178" width="308" height="168" rx="10" fill="none" stroke="rgba(45,212,168,0.08)" stroke-width="4"/>
+  <rect x="51" y="183" width="298" height="22" rx="7" fill="#1e1e2e"/>
+  <circle cx="66" cy="194" r="4" fill="#f87171"/><circle cx="78" cy="194" r="4" fill="#fbbf24"/><circle cx="90" cy="194" r="4" fill="#4ade80"/>
+  <text x="200" y="198" text-anchor="middle" font-family="'SF Mono', monospace" font-size="11" fill="#e0e0e8">VS Code</text>
+  <!-- Code lines -->
+  <text x="66" y="224" font-family="'SF Mono', SFMono-Regular, Consolas, monospace" font-size="11"><tspan fill="#c792ea">const </tspan><tspan fill="#82aaff">app</tspan><tspan fill="#8888a0"> = </tspan><tspan fill="#ffd580">createApp</tspan><tspan fill="#8888a0">();</tspan></text>
+  <text x="66" y="242" font-family="'SF Mono', SFMono-Regular, Consolas, monospace" font-size="11"><tspan fill="#c792ea">import </tspan><tspan fill="#8888a0">{ </tspan><tspan fill="#82aaff">ref</tspan><tspan fill="#8888a0"> } </tspan><tspan fill="#c792ea">from </tspan><tspan fill="#c3e88d">'vue'</tspan><tspan fill="#8888a0">;</tspan></text>
+  <rect x="66" y="254" width="180" height="8" rx="2" fill="rgba(255,255,255,0.02)"/>
+  <rect x="66" y="268" width="140" height="8" rx="2" fill="rgba(255,255,255,0.02)"/>
+  <rect x="66" y="282" width="200" height="8" rx="2" fill="rgba(255,255,255,0.02)"/>
+  <!-- Active indicator -->
+  <circle cx="162" cy="330" r="3" fill="#2dd4a8"/>
+  <text x="175" y="334" font-family="'SF Mono', monospace" font-size="10" fill="#2dd4a8" font-weight="500" letter-spacing="0.5">FOCUSED</text>
+
+  <!-- ===== Window: Browser (right) ===== -->
+  <rect x="400" y="52" width="350" height="290" rx="8" fill="#14141f" stroke="#3a3a52"/>
+  <rect x="401" y="53" width="348" height="22" rx="7" fill="#1e1e2e"/>
+  <circle cx="416" cy="64" r="4" fill="#f87171"/><circle cx="428" cy="64" r="4" fill="#fbbf24"/><circle cx="440" cy="64" r="4" fill="#4ade80"/>
+  <text x="575" y="68" text-anchor="middle" font-family="'SF Mono', monospace" font-size="11" fill="#8888a0">Browser</text>
+  <!-- URL bar -->
+  <rect x="415" y="84" width="320" height="20" rx="5" fill="#252538"/>
+  <text x="575" y="98" text-anchor="middle" font-family="'SF Mono', monospace" font-size="10" fill="#5a5a72">localhost:3000</text>
+  <!-- Page content -->
+  <rect x="415" y="114" width="180" height="14" rx="3" fill="rgba(255,255,255,0.06)"/>
+  <rect x="415" y="136" width="300" height="8" rx="2" fill="rgba(255,255,255,0.03)"/>
+  <rect x="415" y="150" width="240" height="8" rx="2" fill="rgba(255,255,255,0.03)"/>
+  <rect x="415" y="164" width="280" height="8" rx="2" fill="rgba(255,255,255,0.03)"/>
+  <rect x="415" y="184" width="320" height="90" rx="6" fill="rgba(129,140,248,0.04)" stroke="rgba(129,140,248,0.08)"/>
+
+  <!-- ===== Arrow: VS Code → Browser (⌘⌥→) ===== -->
+  <line x1="354" y1="262" x2="392" y2="262" stroke="#2dd4a8" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="392,256 404,262 392,268" fill="#2dd4a8"/>
+  <!-- Keystroke badge -->
+  <rect x="346" y="232" width="60" height="22" rx="6" fill="rgba(45,212,168,0.1)" stroke="rgba(45,212,168,0.25)"/>
+  <text x="376" y="247" text-anchor="middle" font-family="'SF Mono', monospace" font-size="12" fill="#2dd4a8">⌘⌥→</text>
+
+  <!-- ===== Arrow: VS Code → Slack (⌘⌥↑) ===== -->
+  <line x1="200" y1="178" x2="200" y2="158" stroke="#818cf8" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="194,158 200,146 206,158" fill="#818cf8"/>
+  <!-- Keystroke badge -->
+  <rect x="212" y="152" width="56" height="22" rx="6" fill="rgba(129,140,248,0.1)" stroke="rgba(129,140,248,0.25)"/>
+  <text x="240" y="167" text-anchor="middle" font-family="'SF Mono', monospace" font-size="12" fill="#818cf8">⌘⌥↑</text>
+
+  <!-- Dock -->
+  <rect x="290" y="354" width="220" height="20" rx="10" fill="rgba(255,255,255,0.025)"/>
+  <rect x="340" y="359" width="10" height="10" rx="2.5" fill="#252538"/>
+  <rect x="358" y="359" width="10" height="10" rx="2.5" fill="#252538"/>
+  <rect x="376" y="359" width="10" height="10" rx="2.5" fill="rgba(45,212,168,0.3)"/>
+  <rect x="394" y="359" width="10" height="10" rx="2.5" fill="#252538"/>
+  <rect x="412" y="359" width="10" height="10" rx="2.5" fill="#252538"/>
+</svg>

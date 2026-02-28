@@ -42,6 +42,7 @@
   "quickstart.title": "Up and running in minutes",
   "quickstart.step1.title": "Download",
   "quickstart.step1.desc": "Grab the latest .dmg from GitHub Releases, or build from source.",
+  "quickstart.step1.cta": "Download from Releases →",
   "quickstart.step2.title": "Install",
   "quickstart.step2.desc": "Open the .dmg and drag Visual Focusing to Applications.",
   "quickstart.step3.title": "Grant Permission",

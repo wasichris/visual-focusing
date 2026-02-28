@@ -42,6 +42,7 @@
   "quickstart.title": "幾分鐘內即可上手",
   "quickstart.step1.title": "下載",
   "quickstart.step1.desc": "從 GitHub Releases 下載最新的 .dmg，或從原始碼建置。",
+  "quickstart.step1.cta": "前往 Releases 下載 →",
   "quickstart.step2.title": "安裝",
   "quickstart.step2.desc": "開啟 .dmg，將 Visual Focusing 拖曳至「應用程式」資料夾。",
   "quickstart.step3.title": "授予權限",

@@ -1,8 +1,16 @@
 # 🎯 Visual Focusing
 
-**Navigate between windows with keyboard shortcuts — like spatial navigation for your desktop.**
+<div align="center">
 
-🌐 [Official Website](https://wasichris.github.io/visual-focusing/) | [繁體中文](./README.zh-TW.md)
+![Visual Focusing](docs/assets/banner.svg)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![Platform: macOS](https://img.shields.io/badge/Platform-macOS-blue.svg)](#)
+[![GitHub Release](https://img.shields.io/github/v/release/wasichris/visual-focusing)](https://github.com/wasichris/visual-focusing/releases)
+
+🌐 [Official Website](https://wasichris.github.io/visual-focusing/) | 📦 [Download](https://github.com/wasichris/visual-focusing/releases) | [繁體中文](./README.zh-TW.md)
+
+</div>
 
 Visual Focusing lets you switch to the nearest window in any direction (up, down, left, right) using customizable hotkeys. No mouse needed — just press a shortcut and the smartest candidate window gets focused instantly.
 
@@ -56,16 +64,9 @@ All shortcuts are fully customizable in the settings window.
 
 ## 🖥️ How It Works
 
-```
-┌─────────┬─────────┐
-│  Slack  │         │
-├─────────┤ Browser │
-│ VS Code │         │
-└─────────┴─────────┘
+![How It Works](docs/assets/concept.svg)
 
-Press ⌘⌥→ in VS Code → focuses Browser
-Press ⌘⌥↑ in VS Code → focuses Slack
-```
+Press `⌘⌥→` in VS Code → focuses Browser. Press `⌘⌥↑` in VS Code → focuses Slack.
 
 ### Smart Window Selection Algorithm
 
