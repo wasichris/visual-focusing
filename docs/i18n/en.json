@@ -51,5 +51,16 @@
   "footer.license": "Released under MIT License",
   "footer.issues": "Issues",
   "footer.releases": "Releases",
-  "lang.toggle": "繁中"
+  "lang.toggle": "繁中",
+  "algo.diagram.current": "current",
+  "algo.diagram.occluded": "✗ occluded",
+  "algo.diagram.yOverlap": "Y-axis overlap range",
+  "algo.diagram.overlapping": "overlapping",
+  "algo.diagram.nonOverlapping": "non-overlapping",
+  "algo.diagram.fullscreen": "fullscreen",
+  "algo.diagram.priority": "priority",
+  "algo.diagram.highestWins": "↑ highest score wins",
+  "algo.diagram.noResult": "→ nothing found",
+  "algo.diagram.fallback": "← fallback search",
+  "algo.diagram.targetDir": "target direction"
 }

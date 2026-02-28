@@ -243,15 +243,162 @@
         <div class="demo__focus-badge" id="focusBadge" data-i18n="howItWorks.focused">Focused</div>
       </div>
 
-      <!-- Algorithm steps -->
+      <!-- Algorithm steps — illustrated -->
       <div class="algo reveal">
         <h3 class="algo__title" data-i18n="howItWorks.algo.title">Smart Selection Algorithm</h3>
         <div class="algo__steps">
-          <div class="algo__step"><span class="algo__num">01</span><p data-i18n="howItWorks.algo.step1">Filter out completely occluded windows</p></div>
-          <div class="algo__step"><span class="algo__num">02</span><p data-i18n="howItWorks.algo.step2">Check direction & axis overlap</p></div>
-          <div class="algo__step"><span class="algo__num">03</span><p data-i18n="howItWorks.algo.step3">Group candidates by overlap priority</p></div>
-          <div class="algo__step"><span class="algo__num">04</span><p data-i18n="howItWorks.algo.step4">Score by visibility, distance, z-order</p></div>
-          <div class="algo__step"><span class="algo__num">05</span><p data-i18n="howItWorks.algo.step5">Fallback: search the opposite direction</p></div>
+
+          <!-- Step 1: Filter occluded -->
+          <div class="algo__step">
+            <div class="algo__illust">
+              <svg viewBox="0 0 240 110" fill="none">
+                <!-- Window B (front, visible) -->
+                <rect x="18" y="14" width="78" height="48" rx="4" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="1"/>
+                <rect x="19" y="15" width="76" height="11" rx="3" fill="#252538"/>
+                <circle cx="26" cy="20.5" r="2" fill="#f87171"/><circle cx="32" cy="20.5" r="2" fill="#fbbf24"/><circle cx="38" cy="20.5" r="2" fill="#4ade80"/>
+                <text x="57" y="46" font-size="10" fill="#c8c8d8" text-anchor="middle">B</text>
+                <!-- Window A (occluded, dashed red X) -->
+                <rect x="42" y="28" width="55" height="40" rx="4" fill="none" stroke="#f87171" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.45"/>
+                <line x1="50" y1="34" x2="89" y2="62" stroke="#f87171" stroke-width="1" opacity="0.45"/>
+                <line x1="89" y1="34" x2="50" y2="62" stroke="#f87171" stroke-width="1" opacity="0.45"/>
+                <!-- Window C (right, visible) -->
+                <rect x="140" y="18" width="78" height="48" rx="4" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="1"/>
+                <rect x="141" y="19" width="76" height="11" rx="3" fill="#252538"/>
+                <circle cx="148" cy="24.5" r="2" fill="#f87171"/><circle cx="154" cy="24.5" r="2" fill="#fbbf24"/><circle cx="160" cy="24.5" r="2" fill="#4ade80"/>
+                <text x="179" y="50" font-size="10" fill="#c8c8d8" text-anchor="middle">C</text>
+                <!-- Labels -->
+                <text x="57" y="80" font-size="10" fill="#2dd4a8" text-anchor="middle">✓</text>
+                <text x="179" y="80" font-size="10" fill="#2dd4a8" text-anchor="middle">✓</text>
+                <text x="120" y="102" font-size="8.5" fill="#f87171" text-anchor="middle" opacity="0.75" data-i18n="algo.diagram.occluded">✗ occluded</text>
+              </svg>
+            </div>
+            <div class="algo__content">
+              <span class="algo__num">01</span>
+              <p data-i18n="howItWorks.algo.step1">Filter out completely occluded windows</p>
+            </div>
+          </div>
+
+          <!-- Step 2: Direction & axis overlap -->
+          <div class="algo__step">
+            <div class="algo__illust">
+              <svg viewBox="0 0 240 110" fill="none">
+                <!-- Current window -->
+                <rect x="10" y="28" width="58" height="44" rx="4" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="1.2"/>
+                <text x="39" y="54" font-size="8.5" fill="#8888a0" text-anchor="middle" data-i18n="algo.diagram.current">current</text>
+                <!-- Y-axis overlap dashed lines -->
+                <line x1="68" y1="28" x2="230" y2="28" stroke="#2dd4a8" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.35"/>
+                <line x1="68" y1="72" x2="230" y2="72" stroke="#2dd4a8" stroke-width="0.5" stroke-dasharray="3 3" opacity="0.35"/>
+                <text x="190" y="22" font-size="7" fill="#2dd4a8" text-anchor="middle" opacity="0.6" data-i18n="algo.diagram.yOverlap">Y-axis overlap range</text>
+                <!-- Direction arrow -->
+                <line x1="72" y1="50" x2="108" y2="50" stroke="#2dd4a8" stroke-width="1.5"/>
+                <polygon points="108,46 118,50 108,54" fill="#2dd4a8"/>
+                <!-- Candidate D (in Y range — green ✓) -->
+                <rect x="135" y="34" width="48" height="30" rx="3" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="1"/>
+                <text x="159" y="53" font-size="10" fill="#2dd4a8" text-anchor="middle">D ✓</text>
+                <!-- Candidate E (outside Y range — red ✗) -->
+                <rect x="145" y="82" width="48" height="22" rx="3" fill="none" stroke="#f87171" stroke-width="0.8" opacity="0.45"/>
+                <text x="169" y="97" font-size="10" fill="#f87171" text-anchor="middle" opacity="0.6">E ✗</text>
+              </svg>
+            </div>
+            <div class="algo__content">
+              <span class="algo__num">02</span>
+              <p data-i18n="howItWorks.algo.step2">Check direction & axis overlap</p>
+            </div>
+          </div>
+
+          <!-- Step 3: Group by overlap priority -->
+          <div class="algo__step">
+            <div class="algo__illust">
+              <svg viewBox="0 0 240 110" fill="none">
+                <!-- Tier 1: Overlapping (brightest) -->
+                <rect x="8" y="6" width="200" height="28" rx="4" fill="rgba(45,212,168,0.06)" stroke="rgba(45,212,168,0.2)"/>
+                <text x="16" y="24" font-size="9" fill="#2dd4a8" font-weight="500">1st</text>
+                <rect x="50" y="12" width="26" height="16" rx="2" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="0.8"/>
+                <rect x="68" y="12" width="26" height="16" rx="2" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="0.8"/>
+                <text x="148" y="24" font-size="7.5" fill="#8888a0" data-i18n="algo.diagram.overlapping">overlapping</text>
+                <!-- Tier 2: Non-overlapping -->
+                <rect x="8" y="40" width="200" height="28" rx="4" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)"/>
+                <text x="16" y="58" font-size="9" fill="#8888a0">2nd</text>
+                <rect x="50" y="46" width="26" height="16" rx="2" fill="#1a1a2a" stroke="#3a3a52" stroke-width="0.8"/>
+                <text x="148" y="58" font-size="7.5" fill="#5a5a72" data-i18n="algo.diagram.nonOverlapping">non-overlapping</text>
+                <!-- Tier 3: Fullscreen -->
+                <rect x="8" y="74" width="200" height="28" rx="4" fill="rgba(255,255,255,0.01)" stroke="rgba(255,255,255,0.04)"/>
+                <text x="16" y="92" font-size="9" fill="#5a5a72">3rd</text>
+                <rect x="50" y="80" width="26" height="16" rx="2" fill="#111119" stroke="#252538" stroke-width="0.8" opacity="0.6"/>
+                <text x="148" y="92" font-size="7.5" fill="#3a3a52" data-i18n="algo.diagram.fullscreen">fullscreen</text>
+                <!-- Priority arrow -->
+                <line x1="220" y1="14" x2="220" y2="96" stroke="#3a3a52" stroke-width="0.8" stroke-dasharray="2 2"/>
+                <polygon points="217,14 223,14 220,8" fill="#2dd4a8" opacity="0.5"/>
+                <text x="220" y="108" font-size="6.5" fill="#5a5a72" text-anchor="middle" data-i18n="algo.diagram.priority">priority</text>
+              </svg>
+            </div>
+            <div class="algo__content">
+              <span class="algo__num">03</span>
+              <p data-i18n="howItWorks.algo.step3">Group candidates by overlap priority</p>
+            </div>
+          </div>
+
+          <!-- Step 4: Score -->
+          <div class="algo__step">
+            <div class="algo__illust">
+              <svg viewBox="0 0 240 110" fill="none">
+                <!-- Formula -->
+                <text x="120" y="14" font-size="7.5" fill="#5a5a72" text-anchor="middle" font-style="italic">score = visible × 500 − dist − z × 50</text>
+                <!-- Window A (high score) -->
+                <rect x="15" y="24" width="95" height="40" rx="4" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="1"/>
+                <text x="62" y="40" font-size="7.5" fill="#8888a0" text-anchor="middle">visible:90% dist:100 z:1</text>
+                <text x="62" y="54" font-size="8" fill="#c8c8d8" text-anchor="middle">A</text>
+                <!-- Score bar A -->
+                <rect x="15" y="70" width="95" height="6" rx="3" fill="#111119"/>
+                <rect x="15" y="70" width="76" height="6" rx="3" fill="#2dd4a8" opacity="0.6"/>
+                <text x="62" y="90" font-size="10" fill="#2dd4a8" text-anchor="middle" font-weight="500">300 ✓</text>
+                <!-- Window B (low score) -->
+                <rect x="130" y="24" width="95" height="40" rx="4" fill="#1a1a2a" stroke="#3a3a52" stroke-width="1"/>
+                <text x="177" y="40" font-size="7.5" fill="#5a5a72" text-anchor="middle">visible:40% dist:200 z:3</text>
+                <text x="177" y="54" font-size="8" fill="#8888a0" text-anchor="middle">B</text>
+                <!-- Score bar B -->
+                <rect x="130" y="70" width="95" height="6" rx="3" fill="#111119"/>
+                <rect x="130" y="70" width="18" height="6" rx="3" fill="#3a3a52" opacity="0.4"/>
+                <text x="177" y="90" font-size="10" fill="#5a5a72" text-anchor="middle">−150</text>
+                <!-- Label -->
+                <text x="120" y="106" font-size="7.5" fill="#2dd4a8" text-anchor="middle" data-i18n="algo.diagram.highestWins">↑ highest score wins</text>
+              </svg>
+            </div>
+            <div class="algo__content">
+              <span class="algo__num">04</span>
+              <p data-i18n="howItWorks.algo.step4">Score by visibility, distance, z-order</p>
+            </div>
+          </div>
+
+          <!-- Step 5: Fallback -->
+          <div class="algo__step">
+            <div class="algo__illust">
+              <svg viewBox="0 0 240 110" fill="none">
+                <!-- Current window (center) -->
+                <rect x="90" y="30" width="55" height="40" rx="4" fill="#1a1a2a" stroke="#8888a0" stroke-width="1"/>
+                <text x="117" y="54" font-size="8.5" fill="#8888a0" text-anchor="middle" data-i18n="algo.diagram.current">current</text>
+                <!-- Right arrow: nothing found -->
+                <line x1="150" y1="50" x2="200" y2="50" stroke="#f87171" stroke-width="1" opacity="0.4"/>
+                <polygon points="200,47 208,50 200,53" fill="#f87171" opacity="0.4"/>
+                <text x="215" y="54" font-size="12" fill="#f87171" opacity="0.5">✗</text>
+                <text x="180" y="40" font-size="7" fill="#5a5a72" text-anchor="middle" data-i18n="algo.diagram.targetDir">target direction</text>
+                <!-- Left arrow: fallback finds target -->
+                <line x1="85" y1="50" x2="48" y2="50" stroke="#2dd4a8" stroke-width="1.5"/>
+                <polygon points="48,46.5 38,50 48,53.5" fill="#2dd4a8"/>
+                <!-- Target window (left) -->
+                <rect x="5" y="35" width="33" height="28" rx="3" fill="#1a1a2a" stroke="#2dd4a8" stroke-width="1.2"/>
+                <text x="21" y="53" font-size="10" fill="#2dd4a8" text-anchor="middle">✓</text>
+                <!-- Labels -->
+                <text x="55" y="88" font-size="7.5" fill="#2dd4a8" text-anchor="middle" data-i18n="algo.diagram.fallback">← fallback search</text>
+                <text x="180" y="88" font-size="7.5" fill="#f87171" text-anchor="middle" opacity="0.6" data-i18n="algo.diagram.noResult">→ nothing found</text>
+              </svg>
+            </div>
+            <div class="algo__content">
+              <span class="algo__num">05</span>
+              <p data-i18n="howItWorks.algo.step5">Fallback: search the opposite direction</p>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

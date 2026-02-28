@@ -51,5 +51,16 @@
   "footer.license": "以 MIT 授權條款釋出",
   "footer.issues": "問題回報",
   "footer.releases": "版本發布",
-  "lang.toggle": "EN"
+  "lang.toggle": "EN",
+  "algo.diagram.current": "目前",
+  "algo.diagram.occluded": "✗ 被遮擋",
+  "algo.diagram.yOverlap": "Y 軸重疊範圍",
+  "algo.diagram.overlapping": "重疊",
+  "algo.diagram.nonOverlapping": "未重疊",
+  "algo.diagram.fullscreen": "全螢幕",
+  "algo.diagram.priority": "優先度",
+  "algo.diagram.highestWins": "↑ 最高分勝出",
+  "algo.diagram.noResult": "→ 無視窗",
+  "algo.diagram.fallback": "← 後備搜尋",
+  "algo.diagram.targetDir": "目標方向"
 }
