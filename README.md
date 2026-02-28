@@ -2,7 +2,7 @@
 
 **Navigate between windows with keyboard shortcuts — like spatial navigation for your desktop.**
 
-[繁體中文](./README.zh-TW.md)
+🌐 [Official Website](https://wasichris.github.io/visual-focusing/) | [繁體中文](./README.zh-TW.md)
 
 Visual Focusing lets you switch to the nearest window in any direction (up, down, left, right) using customizable hotkeys. No mouse needed — just press a shortcut and the smartest candidate window gets focused instantly.
 

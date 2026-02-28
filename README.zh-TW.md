@@ -2,7 +2,7 @@
 
 **用鍵盤快捷鍵在視窗之間導航 — 讓你的桌面擁有空間導航能力。**
 
-[English](./README.md)
+🌐 [官方網站](https://wasichris.github.io/visual-focusing/) | [English](./README.md)
 
 Visual Focusing 讓你透過自訂快捷鍵，快速切換到上下左右方向最近的視窗。不需要滑鼠，按下快捷鍵就能立即聚焦到最合適的視窗。
 
