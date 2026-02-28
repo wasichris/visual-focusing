@@ -1,6 +1,6 @@
 {
   "name": "visual-focusing",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "macOS 視窗方向切換工具",
   "main": "dist/main/main/index.js",
   "author": "",
