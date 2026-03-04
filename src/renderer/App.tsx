@@ -61,6 +61,9 @@ function App() {
   useEffect(() => {
     loadConfig();
     checkPermissions();
+    window.electronAPI.onConfigChanged((updatedConfig) => {
+      setConfig(updatedConfig);
+    });
   }, []);
 
   const loadConfig = async () => {

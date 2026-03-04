@@ -52,6 +52,7 @@ declare global {
         currentVersion: string;
         releaseUrl: string;
       }>;
+      onConfigChanged: (callback: (config: AppConfig) => void) => void;
     };
   }
 }

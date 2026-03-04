@@ -39,6 +39,12 @@ function Settings({
       .catch(() => {});
   }, []);
 
+  // 當 config prop 被外部（如 tray 選單）更新時，同步 localConfig
+  useEffect(() => {
+    setLocalConfig(config);
+    setHasChanges(false);
+  }, [config]);
+
   const updateConfig = (partial: Partial<AppConfig>) => {
     const newConfig = { ...localConfig, ...partial };
     setLocalConfig(newConfig);

@@ -59,19 +59,58 @@ function createTray() {
 }
 
 const trayTranslations: Record<string, Record<string, string>> = {
-  en: { open: 'Open Visual Focusing', quit: 'Quit' },
-  'zh-TW': { open: '開啟 Visual Focusing', quit: '結束' },
+  en: {
+    open: 'Open Visual Focusing',
+    enable: 'Enable',
+    disable: 'Disable',
+    quit: 'Quit',
+  },
+  'zh-TW': {
+    open: '開啟 Visual Focusing',
+    enable: '啟用',
+    disable: '停用',
+    quit: '結束',
+  },
 };
 
 function rebuildTrayMenu() {
   if (!tray) return;
   const lang = store.get('language') || 'en';
   const tr = trayTranslations[lang] || trayTranslations.en;
+  const enabled = store.get('enabled') as boolean;
 
   const contextMenu = Menu.buildFromTemplate([
     {
       label: `Visual Focusing v${app.getVersion()}`,
       enabled: false,
+    },
+    { type: 'separator' },
+    {
+      label: enabled ? tr.disable : tr.enable,
+      click: () => {
+        const newEnabled = !store.get('enabled');
+        store.set('enabled', newEnabled);
+        if (newEnabled) {
+          shortcutManager.updateShortcuts(
+            store.get('shortcuts') as AppConfig['shortcuts']
+          );
+        } else {
+          shortcutManager.unregisterShortcuts();
+        }
+        rebuildTrayMenu();
+        // 通知 renderer 同步狀態
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          const updatedConfig: AppConfig = {
+            shortcuts: store.get('shortcuts') as AppConfig['shortcuts'],
+            enabled: newEnabled,
+            enableDebugLog: store.get('enableDebugLog') as boolean,
+            hideDockIcon: store.get('hideDockIcon') as boolean,
+            launchAtLogin: app.getLoginItemSettings().openAtLogin,
+            language: store.get('language') as string,
+          };
+          mainWindow.webContents.send('config-changed', updatedConfig);
+        }
+      },
     },
     { type: 'separator' },
     {
@@ -221,6 +260,7 @@ function setupIpcHandlers() {
       shortcutManager.unregisterShortcuts();
     }
 
+    rebuildTrayMenu();
     return true;
   });
 

@@ -19,4 +19,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     currentVersion: string;
     releaseUrl: string;
   }> => ipcRenderer.invoke('check-update'),
+  onConfigChanged: (callback: (config: AppConfig) => void) => {
+    ipcRenderer.on('config-changed', (_event, config: AppConfig) =>
+      callback(config)
+    );
+  },
 });
