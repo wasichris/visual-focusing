@@ -1,5 +1,5 @@
 {
-  "app.title": "🎯 Visual Focusing",
+  "app.title": "Visual Focusing",
   "app.loading": "載入中...",
 
   "permissions.granted": "✅ 權限已授予",
@@ -9,7 +9,6 @@
   "permissions.openSettings": "開啟系統設定",
 
   "settings.enabled": "啟用快速鍵",
-  "settings.notifications": "顯示切換通知",
   "settings.debugLog": "啟用除錯日誌",
   "settings.debugLog.desc": "除錯日誌會在 Console 顯示詳細的切換資訊，開發用途。",
   "settings.hideDock": "關閉視窗後隱藏 Dock 圖示",

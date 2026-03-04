@@ -23,7 +23,6 @@ export interface ShortcutConfig {
 export interface AppConfig {
   shortcuts: ShortcutConfig;
   enabled: boolean;
-  showNotifications: boolean; // 是否顯示切換通知，預設關閉
   enableDebugLog: boolean; // 是否啟用除錯日誌，預設關閉
   hideDockIcon: boolean; // 關閉設定視窗後是否隱藏 Dock 圖示，預設關閉
   launchAtLogin: boolean; // 開機時自動啟動，預設關閉

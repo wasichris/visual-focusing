@@ -28,10 +28,10 @@ type StoreWithMethods<T extends Record<string, any>> = Store<T> & {
 const store = new Store<AppConfig>({
   defaults: {
     shortcuts: {
-      up: 'CommandOrControl+Alt+Up',
-      down: 'CommandOrControl+Alt+Down',
-      left: 'CommandOrControl+Alt+Left',
-      right: 'CommandOrControl+Alt+Right',
+      up: 'Command+Alt+Up',
+      down: 'Command+Alt+Down',
+      left: 'Command+Alt+Left',
+      right: 'Command+Alt+Right',
     },
     enabled: true,
     showNotifications: false, // 預設關閉通知
@@ -189,7 +189,6 @@ function setupIpcHandlers() {
     return {
       shortcuts: store.get('shortcuts'),
       enabled: store.get('enabled'),
-      showNotifications: store.get('showNotifications'),
       enableDebugLog: store.get('enableDebugLog'),
       hideDockIcon: store.get('hideDockIcon'),
       launchAtLogin: loginSettings.openAtLogin,
@@ -200,7 +199,6 @@ function setupIpcHandlers() {
   ipcMain.handle('set-config', (_event, config: AppConfig) => {
     store.set('shortcuts', config.shortcuts);
     store.set('enabled', config.enabled);
-    store.set('showNotifications', config.showNotifications);
     store.set('enableDebugLog', config.enableDebugLog);
     store.set('hideDockIcon', config.hideDockIcon);
 

@@ -33,7 +33,7 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
     const keys: string[] = [];
 
     // 修飾鍵 - 修正 Option 鍵偵測
-    if (e.metaKey) keys.push('CommandOrControl');
+    if (e.metaKey) keys.push('Command');
     if (e.ctrlKey && !e.metaKey) keys.push('Control');
     if (e.altKey) keys.push('Alt'); // Option 鍵在 macOS 上對應 altKey
     if (e.shiftKey) keys.push('Shift');
@@ -106,11 +106,14 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
     setRecordedKeys([]);
   };
 
+  const formatDisplayValue = (v: string) =>
+    v.replace(/CommandOrControl/g, 'Command');
+
   const displayValue = isRecording
     ? recordedKeys.length > 0
       ? recordedKeys.join(' + ')
       : t('shortcuts.recording')
-    : value;
+    : formatDisplayValue(value);
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

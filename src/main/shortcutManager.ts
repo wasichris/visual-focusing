@@ -1,4 +1,4 @@
-import { globalShortcut, Notification } from 'electron';
+import { globalShortcut } from 'electron';
 import Store from 'electron-store';
 import type { ShortcutConfig, Direction, AppConfig } from '../shared/types';
 import { windowManagerInstance } from './windowManager';
@@ -20,13 +20,12 @@ export class ShortcutManager {
     this.store = new Store<AppConfig>({
       defaults: {
         shortcuts: {
-          up: 'CommandOrControl+Alt+Up',
-          down: 'CommandOrControl+Alt+Down',
-          left: 'CommandOrControl+Alt+Left',
-          right: 'CommandOrControl+Alt+Right',
+          up: 'Command+Alt+Up',
+          down: 'Command+Alt+Down',
+          left: 'Command+Alt+Left',
+          right: 'Command+Alt+Right',
         },
         enabled: true,
-        showNotifications: false,
         enableDebugLog: false,
         hideDockIcon: false,
         launchAtLogin: false,
@@ -119,58 +118,18 @@ export class ShortcutManager {
     try {
       const targetWindow =
         windowManagerInstance.findWindowInDirection(direction);
-      const showNotifications = this.store.get('showNotifications', false);
 
       if (targetWindow) {
         const success = windowManagerInstance.focusWindow(targetWindow.id);
-        if (success) {
-          // 根據設定顯示通知
-          if (showNotifications && Notification.isSupported()) {
-            const notification = new Notification({
-              title: '視窗切換',
-              body: `已切換至: ${targetWindow.title}`,
-              silent: true,
-              timeoutType: 'never',
-            });
-            notification.show();
-
-            // 1 秒後自動關閉通知
-            setTimeout(() => {
-              notification.close();
-            }, 1000);
-          }
-        } else {
+        if (!success) {
           logger.warn('視窗切換失敗');
         }
       } else {
         logger.debug(`${direction} 方向沒有找到視窗`);
-
-        // 根據設定顯示沒有視窗的提示
-        if (showNotifications && Notification.isSupported()) {
-          const notification = new Notification({
-            title: '視窗切換',
-            body: `${this.getDirectionName(direction)}沒有可切換的視窗`,
-            silent: true,
-          });
-          notification.show();
-          setTimeout(() => {
-            notification.close();
-          }, 1000);
-        }
       }
     } catch (error) {
       logger.error('處理快速鍵時發生錯誤', error);
     }
-  }
-
-  private getDirectionName(direction: Direction): string {
-    const names: Record<Direction, string> = {
-      up: '上方',
-      down: '下方',
-      left: '左方',
-      right: '右方',
-    };
-    return names[direction];
   }
 
   isRegistered(): boolean {

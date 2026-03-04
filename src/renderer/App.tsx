@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Settings from './components/Settings';
 import type { AppConfig } from '../shared/types';
 import { I18nProvider, useTranslation } from './i18n';
+import appIcon from './assets/app.png';
 
 function AppContent({
   config,
@@ -27,7 +28,21 @@ function AppContent({
 
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '20px' }}>{t('app.title')}</h1>
+      <h1
+        style={{
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+        }}
+      >
+        <img
+          src={appIcon}
+          alt=""
+          style={{ width: '32px', height: '32px', borderRadius: '7px' }}
+        />
+        {t('app.title')}
+      </h1>
       <Settings
         config={config}
         hasPermission={hasPermission}

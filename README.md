@@ -74,7 +74,6 @@ Press `⌘⌥→` in VS Code → focuses Browser. Press `⌘⌥↑` in VS Code �
 2. **Direction & overlap check** — Only windows in the correct direction that share the relevant axis overlap are considered.
 3. **Priority grouping** — Overlapping windows > non-overlapping windows > fullscreen-containing windows.
 4. **Scoring** — `score = visibleRatio × 500 − distance − zOrder × 50`
-5. **Fallback search** — If nothing is found in the target direction, the algorithm searches for the nearest overlapping window in the opposite direction.
 
 ---
 
@@ -83,7 +82,6 @@ Press `⌘⌥→` in VS Code → focuses Browser. Press `⌘⌥↑` in VS Code �
 | Option                    | Description                                                                                   |
 | ------------------------- | --------------------------------------------------------------------------------------------- |
 | Enable shortcuts          | Toggle global hotkeys on/off                                                                  |
-| Show switch notifications | Brief notification when a window switch occurs                                                |
 | Hide Dock icon on close   | App disappears from Dock when the settings window is closed; accessible via the menu bar icon |
 | Launch at login           | Automatically start Visual Focusing when you log in                                           |
 | Debug log                 | Verbose logging in the console for development                                                |

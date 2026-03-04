@@ -1,5 +1,5 @@
 {
-  "app.title": "🎯 Visual Focusing",
+  "app.title": "Visual Focusing",
   "app.loading": "Loading...",
 
   "permissions.granted": "✅ Permissions Granted",
@@ -9,7 +9,6 @@
   "permissions.openSettings": "Open System Settings",
 
   "settings.enabled": "Enable Shortcuts",
-  "settings.notifications": "Show Switch Notifications",
   "settings.debugLog": "Enable Debug Log",
   "settings.debugLog.desc": "Debug logs display detailed switch info in Console, for development use.",
   "settings.hideDock": "Hide Dock Icon After Closing Window",

@@ -30,7 +30,6 @@
   "howItWorks.algo.step2": "Check direction & axis overlap",
   "howItWorks.algo.step3": "Group candidates by overlap priority",
   "howItWorks.algo.step4": "Score by visibility, distance, z-order",
-  "howItWorks.algo.step5": "Fallback: search the opposite direction",
   "shortcuts.label": "— Default Shortcuts",
   "shortcuts.title": "Ready out of the box",
   "shortcuts.note": "All shortcuts are fully customizable in settings.",
@@ -62,6 +61,5 @@
   "algo.diagram.priority": "priority",
   "algo.diagram.highestWins": "↑ highest score wins",
   "algo.diagram.noResult": "→ nothing found",
-  "algo.diagram.fallback": "← fallback search",
   "algo.diagram.targetDir": "target direction"
 }

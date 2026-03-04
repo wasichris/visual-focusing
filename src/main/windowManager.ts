@@ -507,9 +507,8 @@ export class WindowManager {
       return finalCandidates[0].window;
     }
 
-    // 後備搜尋：找左右方向的視窗
-    logger.debug(`\n上方沒有找到視窗，啟動後備搜尋...`);
-    return this.findFallbackForUp(current, windows);
+    logger.debug(`上方沒有找到視窗`);
+    return null;
   }
 
   private findWindowBelow(
@@ -644,9 +643,8 @@ export class WindowManager {
       return finalCandidates[0].window;
     }
 
-    // 後備搜尋：找左右方向的視窗
-    logger.debug(`\n下方沒有找到視窗，啟動後備搜尋...`);
-    return this.findFallbackForDown(current, windows);
+    logger.debug(`下方沒有找到視窗`);
+    return null;
   }
 
   private findWindowToLeft(
@@ -780,9 +778,8 @@ export class WindowManager {
       return finalCandidates[0].window;
     }
 
-    // 後備搜尋：找上下方向的視窗
-    logger.debug(`\n左方沒有找到視窗，啟動後備搜尋...`);
-    return this.findFallbackForLeft(current, windows);
+    logger.debug(`左方沒有找到視窗`);
+    return null;
   }
 
   private findWindowToRight(
@@ -917,9 +914,8 @@ export class WindowManager {
       return finalCandidates[0].window;
     }
 
-    // 後備搜尋：找上下方向的視窗
-    logger.debug(`\n右方沒有找到視窗，啟動後備搜尋...`);
-    return this.findFallbackForRight(current, windows);
+    logger.debug(`右方沒有找到視窗`);
+    return null;
   }
 
   /**
@@ -930,250 +926,6 @@ export class WindowManager {
       this.hasHorizontalOverlap(win1, win2) &&
       this.hasVerticalOverlap(win1, win2)
     );
-  }
-
-  /**
-   * 後備搜尋：向上找不到時，從上緣往下找最近的重疊視窗
-   */
-  private findFallbackForUp(
-    current: WindowInfo,
-    windows: WindowInfo[]
-  ): WindowInfo | null {
-    logger.debug(`\n=== 後備搜尋：從上緣往下找重疊視窗 ===`);
-    logger.debug(`當前視窗: ${current.title}`);
-    logger.debug(`  Y 座標: ${current.bounds.y}`);
-    logger.debug(
-      `  搜尋條件: 與當前視窗完全重疊 且 Y > ${current.bounds.y}（在下方）`
-    );
-
-    // 先檢查所有視窗
-    windows.forEach((win) => {
-      const hasXOverlap = this.hasHorizontalOverlap(current.bounds, win.bounds);
-      const hasYOverlap = this.hasVerticalOverlap(current.bounds, win.bounds);
-      const hasComplete = hasXOverlap && hasYOverlap;
-      const yCondition = win.bounds.y > current.bounds.y;
-
-      logger.debug(
-        `\n檢查: ${win.title}` +
-          `\n  位置: (${win.bounds.x}, ${win.bounds.y}) 大小: ${win.bounds.width}x${win.bounds.height}` +
-          `\n  X重疊: ${hasXOverlap ? '✓' : '✗'}` +
-          `\n  Y重疊: ${hasYOverlap ? '✓' : '✗'}` +
-          `\n  完全重疊: ${hasComplete ? '✓' : '✗'}` +
-          `\n  Y座標條件 (${win.bounds.y} > ${current.bounds.y}): ${yCondition ? '✓' : '✗'}` +
-          `\n  → ${hasComplete && yCondition ? '✓✓ 符合' : '✗✗ 不符合'}`
-      );
-    });
-
-    // 先找一般視窗，再找全螢幕視窗
-    const normalCandidates = windows
-      .filter((win) => {
-        return (
-          this.hasCompleteOverlap(current.bounds, win.bounds) &&
-          !this.isFullscreenContaining(current.bounds, win.bounds)
-        );
-      })
-      .filter((win) => win.bounds.y > current.bounds.y)
-      .sort((a, b) => a.bounds.y - b.bounds.y); // 升序，選最小的Y（最接近上緣）
-
-    if (normalCandidates.length > 0) {
-      logger.debug(`\n找到 ${normalCandidates.length} 個一般視窗候選`);
-      logger.debug(
-        `選擇最接近的: ${normalCandidates[0].title} (Y: ${normalCandidates[0].bounds.y})`
-      );
-      return normalCandidates[0];
-    }
-
-    // 如果沒有一般視窗，才考慮全螢幕視窗
-    const fullscreenCandidates = windows
-      .filter((win) => {
-        return (
-          this.hasCompleteOverlap(current.bounds, win.bounds) &&
-          this.isFullscreenContaining(current.bounds, win.bounds)
-        );
-      })
-      .filter((win) => win.bounds.y > current.bounds.y)
-      .sort((a, b) => a.bounds.y - b.bounds.y);
-
-    if (fullscreenCandidates.length > 0) {
-      logger.debug(`\n找到 ${fullscreenCandidates.length} 個全螢幕視窗候選`);
-      logger.debug(
-        `選擇最接近的: ${fullscreenCandidates[0].title} (Y: ${fullscreenCandidates[0].bounds.y}) [全螢幕]`
-      );
-      return fullscreenCandidates[0];
-    }
-
-    logger.debug(`\n後備搜尋也未找到視窗`);
-    return null;
-  }
-
-  /**
-   * 後備搜尋：向下找不到時，從下緣往上找最近的重疊視窗
-   */
-  private findFallbackForDown(
-    current: WindowInfo,
-    windows: WindowInfo[]
-  ): WindowInfo | null {
-    const currentBottom = current.bounds.y + current.bounds.height;
-    logger.debug(`\n=== 後備搜尋：從下緣往上找重疊視窗 ===`);
-    logger.debug(`當前視窗: ${current.title}`);
-    logger.debug(`  下緣 Y 座標: ${currentBottom}`);
-    logger.debug(
-      `  搜尋條件: 與當前視窗完全重疊 且 Y < ${currentBottom}（在上方）`
-    );
-
-    // 先找一般視窗，再找全螢幕視窗
-    const normalCandidates = windows
-      .filter((win) => {
-        return (
-          this.hasCompleteOverlap(current.bounds, win.bounds) &&
-          !this.isFullscreenContaining(current.bounds, win.bounds)
-        );
-      })
-      .filter((win) => win.bounds.y < currentBottom)
-      .sort((a, b) => b.bounds.y - a.bounds.y); // 降序，選最大的Y（最接近下緣）
-
-    if (normalCandidates.length > 0) {
-      logger.debug(`找到 ${normalCandidates.length} 個一般視窗候選`);
-      logger.debug(
-        `選擇最接近的: ${normalCandidates[0].title} (Y: ${normalCandidates[0].bounds.y})`
-      );
-      return normalCandidates[0];
-    }
-
-    // 如果沒有一般視窗，才考慮全螢幕視窗
-    const fullscreenCandidates = windows
-      .filter((win) => {
-        return (
-          this.hasCompleteOverlap(current.bounds, win.bounds) &&
-          this.isFullscreenContaining(current.bounds, win.bounds)
-        );
-      })
-      .filter((win) => win.bounds.y < currentBottom)
-      .sort((a, b) => b.bounds.y - a.bounds.y);
-
-    if (fullscreenCandidates.length > 0) {
-      logger.debug(`找到 ${fullscreenCandidates.length} 個全螢幕視窗候選`);
-      logger.debug(
-        `選擇最接近的: ${fullscreenCandidates[0].title} (Y: ${fullscreenCandidates[0].bounds.y}) [全螢幕]`
-      );
-      return fullscreenCandidates[0];
-    }
-
-    logger.debug(`後備搜尋也未找到視窗`);
-    return null;
-  }
-
-  /**
-   * 後備搜尋：向左找不到時，從左緣往右找最近的重疊視窗
-   */
-  private findFallbackForLeft(
-    current: WindowInfo,
-    windows: WindowInfo[]
-  ): WindowInfo | null {
-    logger.debug(`\n=== 後備搜尋：從左緣往右找重疊視窗 ===`);
-    logger.debug(`當前視窗: ${current.title}`);
-    logger.debug(`  X 座標: ${current.bounds.x}`);
-    logger.debug(
-      `  搜尋條件: 與當前視窗完全重疊 且 X > ${current.bounds.x}（在右方）`
-    );
-
-    // 先找一般視窗，再找全螢幕視窗
-    const normalCandidates = windows
-      .filter((win) => {
-        return (
-          this.hasCompleteOverlap(current.bounds, win.bounds) &&
-          !this.isFullscreenContaining(current.bounds, win.bounds)
-        );
-      })
-      .filter((win) => win.bounds.x > current.bounds.x)
-      .sort((a, b) => a.bounds.x - b.bounds.x); // 升序，選最小的X（最接近左緣）
-
-    if (normalCandidates.length > 0) {
-      logger.debug(`找到 ${normalCandidates.length} 個一般視窗候選`);
-      logger.debug(
-        `選擇最接近的: ${normalCandidates[0].title} (X: ${normalCandidates[0].bounds.x})`
-      );
-      return normalCandidates[0];
-    }
-
-    // 如果沒有一般視窗，才考慮全螢幕視窗
-    const fullscreenCandidates = windows
-      .filter((win) => {
-        return (
-          this.hasCompleteOverlap(current.bounds, win.bounds) &&
-          this.isFullscreenContaining(current.bounds, win.bounds)
-        );
-      })
-      .filter((win) => win.bounds.x > current.bounds.x)
-      .sort((a, b) => a.bounds.x - b.bounds.x);
-
-    if (fullscreenCandidates.length > 0) {
-      logger.debug(`找到 ${fullscreenCandidates.length} 個全螢幕視窗候選`);
-      logger.debug(
-        `選擇最接近的: ${fullscreenCandidates[0].title} (X: ${fullscreenCandidates[0].bounds.x}) [全螢幕]`
-      );
-      return fullscreenCandidates[0];
-    }
-
-    logger.debug(`後備搜尋也未找到視窗`);
-    return null;
-  }
-
-  /**
-   * 後備搜尋：向右找不到時，從右緣往左找最近的重疊視窗
-   */
-  private findFallbackForRight(
-    current: WindowInfo,
-    windows: WindowInfo[]
-  ): WindowInfo | null {
-    const currentRight = current.bounds.x + current.bounds.width;
-    logger.debug(`\n=== 後備搜尋：從右緣往左找重疊視窗 ===`);
-    logger.debug(`當前視窗: ${current.title}`);
-    logger.debug(`  右緣 X 座標: ${currentRight}`);
-    logger.debug(
-      `  搜尋條件: 與當前視窗完全重疊 且 X < ${currentRight}（在左方）`
-    );
-
-    // 先找一般視窗，再找全螢幕視窗
-    const normalCandidates = windows
-      .filter((win) => {
-        return (
-          this.hasCompleteOverlap(current.bounds, win.bounds) &&
-          !this.isFullscreenContaining(current.bounds, win.bounds)
-        );
-      })
-      .filter((win) => win.bounds.x < currentRight)
-      .sort((a, b) => b.bounds.x - a.bounds.x); // 降序，選最大的X（最接近右緣）
-
-    if (normalCandidates.length > 0) {
-      logger.debug(`找到 ${normalCandidates.length} 個一般視窗候選`);
-      logger.debug(
-        `選擇最接近的: ${normalCandidates[0].title} (X: ${normalCandidates[0].bounds.x})`
-      );
-      return normalCandidates[0];
-    }
-
-    // 如果沒有一般視窗，才考慮全螢幕視窗
-    const fullscreenCandidates = windows
-      .filter((win) => {
-        return (
-          this.hasCompleteOverlap(current.bounds, win.bounds) &&
-          this.isFullscreenContaining(current.bounds, win.bounds)
-        );
-      })
-      .filter((win) => win.bounds.x < currentRight)
-      .sort((a, b) => b.bounds.x - a.bounds.x);
-
-    if (fullscreenCandidates.length > 0) {
-      logger.debug(`找到 ${fullscreenCandidates.length} 個全螢幕視窗候選`);
-      logger.debug(
-        `選擇最接近的: ${fullscreenCandidates[0].title} (X: ${fullscreenCandidates[0].bounds.x}) [全螢幕]`
-      );
-      return fullscreenCandidates[0];
-    }
-
-    logger.debug(`後備搜尋也未找到視窗`);
-    return null;
   }
 
   private getCenterPoint(bounds: WindowBounds): { x: number; y: number } {

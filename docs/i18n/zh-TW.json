@@ -30,7 +30,6 @@
   "howItWorks.algo.step2": "檢查方向與軸向重疊",
   "howItWorks.algo.step3": "依重疊優先度分組候選視窗",
   "howItWorks.algo.step4": "依可見度、距離、Z 軸層序評分",
-  "howItWorks.algo.step5": "後備方案：搜尋反方向",
   "shortcuts.label": "— 預設快捷鍵",
   "shortcuts.title": "開箱即用",
   "shortcuts.note": "所有快捷鍵都可以在設定中自由自訂。",
@@ -62,6 +61,5 @@
   "algo.diagram.priority": "優先度",
   "algo.diagram.highestWins": "↑ 最高分勝出",
   "algo.diagram.noResult": "→ 無視窗",
-  "algo.diagram.fallback": "← 後備搜尋",
   "algo.diagram.targetDir": "目標方向"
 }

@@ -171,27 +171,6 @@ function Settings({
             display: 'flex',
             alignItems: 'center',
             cursor: 'pointer',
-            marginBottom: '15px',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={localConfig.showNotifications ?? false}
-            onChange={(e) =>
-              updateConfig({ showNotifications: e.target.checked })
-            }
-            style={{ marginRight: '10px', width: '20px', height: '20px' }}
-          />
-          <span style={{ fontSize: '16px', fontWeight: '500' }}>
-            {t('settings.notifications')}
-          </span>
-        </label>
-
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'pointer',
             marginBottom: '10px',
           }}
         >
