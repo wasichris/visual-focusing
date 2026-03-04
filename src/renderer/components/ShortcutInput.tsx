@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '../i18n';
 
 interface ShortcutInputProps {
@@ -11,34 +11,27 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
   const { t } = useTranslation();
   const [isRecording, setIsRecording] = useState(false);
   const [recordedKeys, setRecordedKeys] = useState<string[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isRecording && inputRef.current) {
-      inputRef.current.focus();
-      // 開始錄製時暫停快捷鍵
+    if (isRecording) {
       window.electronAPI.suspendShortcuts();
     } else {
-      // 結束錄製時恢復快捷鍵
       window.electronAPI.resumeShortcuts();
     }
   }, [isRecording]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isRecording) return;
-
     e.preventDefault();
     e.stopPropagation();
 
     const keys: string[] = [];
-
-    // 修飾鍵 - 修正 Option 鍵偵測
     if (e.metaKey) keys.push('Command');
     if (e.ctrlKey && !e.metaKey) keys.push('Control');
-    if (e.altKey) keys.push('Alt'); // Option 鍵在 macOS 上對應 altKey
+    if (e.altKey) keys.push('Alt');
     if (e.shiftKey) keys.push('Shift');
 
-    // 主鍵 - 使用 e.code 來避免 macOS Option 鍵產生特殊字元（如 ∆）
     const mainKey = e.key;
     if (
       mainKey !== 'Meta' &&
@@ -46,7 +39,6 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
       mainKey !== 'Alt' &&
       mainKey !== 'Shift'
     ) {
-      // 特殊鍵映射
       const keyMap: Record<string, string> = {
         ArrowUp: 'Up',
         ArrowDown: 'Down',
@@ -54,30 +46,21 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
         ArrowRight: 'Right',
         ' ': 'Space',
       };
-
       let finalKey: string;
       const code = e.code;
-
       if (code.startsWith('Key')) {
-        // KeyA ~ KeyZ → A ~ Z
         finalKey = code.slice(3).toUpperCase();
       } else if (code.startsWith('Digit')) {
-        // Digit0 ~ Digit9 → 0 ~ 9
         finalKey = code.slice(5);
       } else {
         finalKey = keyMap[mainKey] || mainKey;
-        if (finalKey.length === 1) {
-          finalKey = finalKey.toUpperCase();
-        }
+        if (finalKey.length === 1) finalKey = finalKey.toUpperCase();
       }
-
       keys.push(finalKey);
     }
 
     setRecordedKeys(keys);
 
-    // 如果有完整的組合鍵（至少一個修飾鍵 + 一個主鍵），完成錄製
-    // 檢查是否有主鍵（非修飾鍵）
     const hasMainKey =
       mainKey !== 'Meta' &&
       mainKey !== 'Control' &&
@@ -85,59 +68,73 @@ function ShortcutInput({ label, value, onChange }: ShortcutInputProps) {
       mainKey !== 'Shift';
 
     if (hasMainKey && keys.length >= 2) {
-      const shortcut = keys.join('+');
-      onChange(shortcut);
+      onChange(keys.join('+'));
       setIsRecording(false);
       setRecordedKeys([]);
     }
   };
 
-  const handleStartRecording = () => {
+  const handleFocus = () => {
     setIsRecording(true);
     setRecordedKeys([]);
   };
 
   const handleBlur = () => {
     if (isRecording && recordedKeys.length >= 2) {
-      const shortcut = recordedKeys.join('+');
-      onChange(shortcut);
+      onChange(recordedKeys.join('+'));
     }
     setIsRecording(false);
     setRecordedKeys([]);
   };
 
-  const formatDisplayValue = (v: string) =>
-    v.replace(/CommandOrControl/g, 'Command');
+  const formatValue = (v: string) => v.replace(/CommandOrControl/g, 'Command');
 
-  const displayValue = isRecording
-    ? recordedKeys.length > 0
-      ? recordedKeys.join(' + ')
-      : t('shortcuts.recording')
-    : formatDisplayValue(value);
+  const renderChips = (keyString: string) => {
+    if (!keyString) return null;
+    const keys = keyString.split('+');
+    return (
+      <>
+        {keys.map((key, i) => (
+          <span
+            key={i}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+          >
+            <kbd className="sf-kbd">{key}</kbd>
+            {i < keys.length - 1 && <span className="sf-kbd--sep">+</span>}
+          </span>
+        ))}
+      </>
+    );
+  };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-      <label style={{ minWidth: '120px', fontSize: '14px' }}>{label}</label>
-      <input
-        ref={inputRef}
-        type="text"
-        value={displayValue}
-        onKeyDown={handleKeyDown}
-        onFocus={handleStartRecording}
-        onBlur={handleBlur}
-        readOnly
-        placeholder={t('shortcuts.placeholder')}
-        style={{
-          flex: 1,
-          padding: '8px 12px',
-          border: isRecording ? '2px solid #007bff' : '1px solid #ddd',
-          borderRadius: '4px',
-          fontSize: '14px',
-          backgroundColor: isRecording ? '#f0f8ff' : 'white',
-          cursor: 'pointer',
-          outline: 'none',
-        }}
-      />
+    <div
+      ref={rowRef}
+      tabIndex={0}
+      role="button"
+      className={`sf-shortcut-row${isRecording ? ' sf-shortcut-row--recording' : ''}`}
+      onClick={() => {
+        if (!isRecording) rowRef.current?.focus();
+      }}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      style={{ outline: 'none' }}
+    >
+      <span className="sf-shortcut-row__label">{label}</span>
+      <div className="sf-shortcut-row__keys">
+        {isRecording ? (
+          recordedKeys.length > 0 ? (
+            renderChips(recordedKeys.join('+'))
+          ) : (
+            <span className="sf-recording-hint">
+              {t('shortcuts.recording')}
+            </span>
+          )
+        ) : (
+          renderChips(formatValue(value))
+        )}
+      </div>
     </div>
   );
 }

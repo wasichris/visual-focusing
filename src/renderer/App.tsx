@@ -27,22 +27,31 @@ function AppContent({
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h1
+    <div style={{ padding: '20px 22px', maxWidth: '600px', margin: '0 auto' }}>
+      <div
         style={{
-          marginBottom: '20px',
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
+          marginBottom: '18px',
         }}
       >
         <img
           src={appIcon}
           alt=""
-          style={{ width: '32px', height: '32px', borderRadius: '7px' }}
+          style={{ width: '30px', height: '30px', borderRadius: '7px' }}
         />
-        {t('app.title')}
-      </h1>
+        <h1
+          style={{
+            fontSize: '17px',
+            fontWeight: '600',
+            color: 'var(--text)',
+            letterSpacing: '-0.01em',
+          }}
+        >
+          {t('app.title')}
+        </h1>
+      </div>
       <Settings
         config={config}
         hasPermission={hasPermission}

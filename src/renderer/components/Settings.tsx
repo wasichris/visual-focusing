@@ -10,6 +10,64 @@ interface SettingsProps {
   onRequestPermissions: () => void;
 }
 
+// ── Design helpers ──────────────────────────────────────────────
+
+function Toggle({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <button
+      role="switch"
+      aria-checked={checked}
+      className={`sf-toggle${checked ? ' sf-toggle--on' : ''}`}
+      onClick={(e) => {
+        e.stopPropagation();
+        onChange(!checked);
+      }}
+    >
+      <span className="sf-toggle__thumb" />
+    </button>
+  );
+}
+
+function ToggleRow({
+  label,
+  description,
+  checked,
+  onChange,
+}: {
+  label: string;
+  description?: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="sf-toggle-row" onClick={() => onChange(!checked)}>
+      <div className="sf-toggle-row__text">
+        <span className="sf-toggle-row__label">{label}</span>
+        {description && (
+          <span className="sf-toggle-row__desc">{description}</span>
+        )}
+      </div>
+      <Toggle checked={checked} onChange={onChange} />
+    </div>
+  );
+}
+
+function SectionCard({ children }: { children: React.ReactNode }) {
+  return <div className="sf-card">{children}</div>;
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <div className="sf-section-label">{children}</div>;
+}
+
+// ── Main component ──────────────────────────────────────────────
+
 function Settings({
   config,
   hasPermission,
@@ -39,15 +97,13 @@ function Settings({
       .catch(() => {});
   }, []);
 
-  // 當 config prop 被外部（如 tray 選單）更新時，同步 localConfig
   useEffect(() => {
     setLocalConfig(config);
     setHasChanges(false);
   }, [config]);
 
   const updateConfig = (partial: Partial<AppConfig>) => {
-    const newConfig = { ...localConfig, ...partial };
-    setLocalConfig(newConfig);
+    setLocalConfig((prev) => ({ ...prev, ...partial }));
     setHasChanges(true);
   };
 
@@ -69,7 +125,6 @@ function Settings({
     onSave(localConfig);
     setHasChanges(false);
   };
-
   const handleReset = () => {
     setLocalConfig(config);
     setLanguage(config.language || 'en');
@@ -82,24 +137,19 @@ function Settings({
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
           justifyContent: 'flex-end',
-          marginBottom: '15px',
+          alignItems: 'center',
           gap: '8px',
+          marginBottom: '12px',
         }}
       >
-        <span style={{ fontSize: '14px', color: '#666' }}>
+        <span style={{ fontSize: '11.5px', color: 'var(--text-3)' }}>
           {t('language.label')}
         </span>
         <select
+          className="sf-lang-select"
           value={language}
           onChange={(e) => handleLanguageChange(e.target.value)}
-          style={{
-            padding: '4px 8px',
-            borderRadius: '4px',
-            border: '1px solid #ddd',
-            fontSize: '14px',
-          }}
         >
           {supportedLanguages.map((lang) => (
             <option key={lang.code} value={lang.code}>
@@ -109,277 +159,135 @@ function Settings({
         </select>
       </div>
 
-      {/* Permissions */}
+      {/* Permission banner */}
       <div
-        style={{
-          padding: '15px',
-          marginBottom: '20px',
-          borderRadius: '8px',
-          backgroundColor: hasPermission ? '#d4edda' : '#f8d7da',
-          border: `1px solid ${hasPermission ? '#c3e6cb' : '#f5c6cb'}`,
-        }}
+        className={`sf-permission ${hasPermission ? 'sf-permission--ok' : 'sf-permission--warn'}`}
       >
-        <h3 style={{ marginTop: 0, marginBottom: '10px' }}>
-          {hasPermission ? t('permissions.granted') : t('permissions.required')}
-        </h3>
-        <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>
-          {hasPermission
-            ? t('permissions.granted.desc')
-            : t('permissions.required.desc')}
-        </p>
+        <div className="sf-permission__dot" />
+        <div className="sf-permission__text">
+          <strong>
+            {hasPermission
+              ? t('permissions.granted')
+              : t('permissions.required')}
+          </strong>
+          <span>
+            {hasPermission
+              ? t('permissions.granted.desc')
+              : t('permissions.required.desc')}
+          </span>
+        </div>
         {!hasPermission && (
           <button
+            className="sf-btn sf-btn--primary"
             onClick={onRequestPermissions}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
           >
             {t('permissions.openSettings')}
           </button>
         )}
       </div>
 
-      {/* Toggles */}
-      <div
-        style={{
-          marginBottom: '20px',
-          padding: '15px',
-          border: '1px solid #ddd',
-          borderRadius: '8px',
-        }}
-      >
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'pointer',
-            marginBottom: '15px',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={localConfig.enabled}
-            onChange={(e) => updateConfig({ enabled: e.target.checked })}
-            style={{ marginRight: '10px', width: '20px', height: '20px' }}
-          />
-          <span style={{ fontSize: '16px', fontWeight: '500' }}>
-            {t('settings.enabled')}
-          </span>
-        </label>
-
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'pointer',
-            marginBottom: '10px',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={localConfig.enableDebugLog ?? false}
-            onChange={(e) => updateConfig({ enableDebugLog: e.target.checked })}
-            style={{ marginRight: '10px', width: '20px', height: '20px' }}
-          />
-          <span style={{ fontSize: '16px', fontWeight: '500' }}>
-            {t('settings.debugLog')}
-          </span>
-        </label>
-        <p style={{ margin: '0 0 15px 30px', fontSize: '14px', color: '#666' }}>
-          {t('settings.debugLog.desc')}
-        </p>
-
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'pointer',
-            marginBottom: '10px',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={localConfig.hideDockIcon ?? false}
-            onChange={(e) => updateConfig({ hideDockIcon: e.target.checked })}
-            style={{ marginRight: '10px', width: '20px', height: '20px' }}
-          />
-          <span style={{ fontSize: '16px', fontWeight: '500' }}>
-            {t('settings.hideDock')}
-          </span>
-        </label>
-        <p style={{ margin: '0 0 0 30px', fontSize: '14px', color: '#666' }}>
-          {t('settings.hideDock.desc')}
-        </p>
-      </div>
-
-      {/* System */}
-      <div
-        style={{
-          marginBottom: '20px',
-          padding: '15px',
-          border: '1px solid #ddd',
-          borderRadius: '8px',
-        }}
-      >
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'pointer',
-            marginBottom: '10px',
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={localConfig.launchAtLogin ?? false}
-            onChange={(e) => updateConfig({ launchAtLogin: e.target.checked })}
-            style={{ marginRight: '10px', width: '20px', height: '20px' }}
-          />
-          <span style={{ fontSize: '16px', fontWeight: '500' }}>
-            {t('settings.launchAtLogin')}
-          </span>
-        </label>
-        <p style={{ margin: '0 0 0 30px', fontSize: '14px', color: '#666' }}>
-          {t('settings.launchAtLogin.desc')}
-        </p>
-      </div>
+      {/* General */}
+      <SectionCard>
+        <SectionLabel>General</SectionLabel>
+        <ToggleRow
+          label={t('settings.enabled')}
+          checked={localConfig.enabled}
+          onChange={(v) => updateConfig({ enabled: v })}
+        />
+        <ToggleRow
+          label={t('settings.launchAtLogin')}
+          description={t('settings.launchAtLogin.desc')}
+          checked={localConfig.launchAtLogin ?? false}
+          onChange={(v) => updateConfig({ launchAtLogin: v })}
+        />
+        <ToggleRow
+          label={t('settings.hideDock')}
+          description={t('settings.hideDock.desc')}
+          checked={localConfig.hideDockIcon ?? false}
+          onChange={(v) => updateConfig({ hideDockIcon: v })}
+        />
+      </SectionCard>
 
       {/* Shortcuts */}
-      <div
-        style={{
-          marginBottom: '20px',
-          padding: '15px',
-          border: '1px solid #ddd',
-          borderRadius: '8px',
-        }}
-      >
-        <h3 style={{ marginTop: 0, marginBottom: '5px' }}>
-          {t('shortcuts.title')}
-        </h3>
-        <p style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#666' }}>
+      <SectionCard>
+        <SectionLabel>Shortcuts</SectionLabel>
+        <p className="sf-shortcuts-desc">
           {localConfig.enabled
             ? t('shortcuts.enabled.desc')
             : t('shortcuts.disabled.desc')}
         </p>
-        <div style={{ display: 'grid', gap: '15px' }}>
-          <ShortcutInput
-            label={t('shortcuts.up')}
-            value={localConfig.shortcuts.up}
-            onChange={(v) => handleShortcutChange('up', v)}
-          />
-          <ShortcutInput
-            label={t('shortcuts.down')}
-            value={localConfig.shortcuts.down}
-            onChange={(v) => handleShortcutChange('down', v)}
-          />
-          <ShortcutInput
-            label={t('shortcuts.left')}
-            value={localConfig.shortcuts.left}
-            onChange={(v) => handleShortcutChange('left', v)}
-          />
-          <ShortcutInput
-            label={t('shortcuts.right')}
-            value={localConfig.shortcuts.right}
-            onChange={(v) => handleShortcutChange('right', v)}
-          />
-        </div>
-        <p style={{ marginTop: '15px', fontSize: '13px', color: '#666' }}>
-          {t('shortcuts.hint')}
-        </p>
-      </div>
+        <ShortcutInput
+          label={t('shortcuts.up')}
+          value={localConfig.shortcuts.up}
+          onChange={(v) => handleShortcutChange('up', v)}
+        />
+        <ShortcutInput
+          label={t('shortcuts.down')}
+          value={localConfig.shortcuts.down}
+          onChange={(v) => handleShortcutChange('down', v)}
+        />
+        <ShortcutInput
+          label={t('shortcuts.left')}
+          value={localConfig.shortcuts.left}
+          onChange={(v) => handleShortcutChange('left', v)}
+        />
+        <ShortcutInput
+          label={t('shortcuts.right')}
+          value={localConfig.shortcuts.right}
+          onChange={(v) => handleShortcutChange('right', v)}
+        />
+        <p className="sf-shortcuts-hint">{t('shortcuts.hint')}</p>
+      </SectionCard>
 
-      {/* Save buttons */}
+      {/* Advanced */}
+      <SectionCard>
+        <SectionLabel>Advanced</SectionLabel>
+        <ToggleRow
+          label={t('settings.debugLog')}
+          description={t('settings.debugLog.desc')}
+          checked={localConfig.enableDebugLog ?? false}
+          onChange={(v) => updateConfig({ enableDebugLog: v })}
+        />
+      </SectionCard>
+
+      {/* Save bar */}
       {hasChanges && (
-        <div
-          style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}
-        >
-          <button
-            onClick={handleReset}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
+        <div className="sf-savebar">
+          <button className="sf-btn sf-btn--ghost" onClick={handleReset}>
             {t('actions.cancel')}
           </button>
-          <button
-            onClick={handleSave}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#28a745',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
+          <button className="sf-btn sf-btn--primary" onClick={handleSave}>
             {t('actions.save')}
           </button>
         </div>
       )}
 
       {/* Help */}
-      <div
-        style={{
-          marginTop: '30px',
-          padding: '15px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '8px',
-        }}
-      >
-        <h3 style={{ marginTop: 0 }}>{t('help.title')}</h3>
-        <ul style={{ marginBottom: 0, paddingLeft: '20px' }}>
+      <SectionCard>
+        <SectionLabel>Help</SectionLabel>
+        <ul className="sf-help-list">
           <li>{t('help.1')}</li>
           <li>{t('help.2')}</li>
           <li>{t('help.3')}</li>
           <li>{t('help.4')}</li>
         </ul>
-      </div>
+      </SectionCard>
 
-      {/* Update notification */}
+      {/* Update */}
       {updateInfo && (
-        <div
-          style={{
-            marginTop: '20px',
-            padding: '12px 15px',
-            backgroundColor: '#fff3cd',
-            border: '1px solid #ffc107',
-            borderRadius: '8px',
-            fontSize: '14px',
-          }}
-        >
+        <div className="sf-update">
           {t('update.available', { version: updateInfo.latestVersion })}
           <a
             href={updateInfo.releaseUrl}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ marginLeft: '8px', color: '#0056b3' }}
           >
             {t('update.download')}
           </a>
         </div>
       )}
-      {version && (
-        <p
-          style={{
-            textAlign: 'center',
-            fontSize: '12px',
-            color: '#999',
-            marginTop: '20px',
-          }}
-        >
-          Visual Focusing v{version}
-        </p>
-      )}
+
+      {version && <p className="sf-version">Visual Focusing v{version}</p>}
     </div>
   );
 }
